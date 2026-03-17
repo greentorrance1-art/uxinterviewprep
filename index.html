@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UX Interview Engine — Mattress Firm</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --surface3: #222222;
+    --border: #2a2a2a;
+    --border2: #333333;
+    --accent: #c8f55a;
+    --accent2: #a8d93a;
+    --text: #f0ede8;
+    --text2: #9a9590;
+    --text3: #5a5550;
+    --danger: #ff5a4a;
+    --success: #4aff8a;
+    --warning: #ffb84a;
+    --info: #4ab4ff;
+    --hire: #c8f55a;
+    --reject: #ff5a4a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+
+  /* NOISE TEXTURE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+
+  /* SCREENS */
+  .screen { display: none; flex-direction: column; min-height: 100vh; position: relative; z-index: 1; }
+  .screen.active { display: flex; }
+
+  /* ======================== HOME SCREEN ======================== */
+  #homeScreen {
+    padding: 0;
+  }
+
+  .home-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 40px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .logo span { color: var(--accent); }
+
+  .target-chip {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--accent);
+    background: rgba(200,245,90,0.08);
+    border: 1px solid rgba(200,245,90,0.2);
+    padding: 5px 12px;
+    border-radius: 100px;
+    letter-spacing: 0.05em;
+  }
+
+  .home-hero {
+    padding: 80px 40px 60px;
+    max-width: 900px;
+    flex: 1;
+  }
+
+  .hero-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .hero-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(42px, 6vw, 72px);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 32px;
+  }
+
+  .hero-title em {
+    font-style: normal;
+    color: var(--accent);
+  }
+
+  .hero-sub {
+    font-size: 16px;
+    color: var(--text2);
+    line-height: 1.7;
+    max-width: 480px;
+    margin-bottom: 48px;
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 32px;
+    margin-bottom: 64px;
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .modes-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .modes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    max-width: 900px;
+    padding: 0 40px 60px;
+  }
+
+  .mode-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mode-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.2s ease;
+  }
+
+  .mode-card:hover {
+    border-color: var(--border2);
+    background: var(--surface2);
+    transform: translateY(-2px);
+  }
+
+  .mode-card:hover::before { transform: scaleX(1); }
+
+  .mode-card.selected {
+    border-color: var(--accent);
+    background: rgba(200,245,90,0.05);
+  }
+
+  .mode-card.selected::before { transform: scaleX(1); }
+
+  .mode-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    margin-bottom: 16px;
+  }
+
+  .mode-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .mode-desc {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+
+  .mode-tag {
+    display: inline-block;
+    margin-top: 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+    border: 1px solid var(--border);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .mode-card.selected .mode-tag {
+    color: var(--accent);
+    border-color: rgba(200,245,90,0.3);
+  }
+
+  .start-area {
+    padding: 0 40px 60px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .start-btn {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    background: var(--accent);
+    color: #0a0a0a;
+    border: none;
+    padding: 16px 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .start-btn.ready {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .start-btn.ready:hover {
+    background: var(--accent2);
+    transform: translateY(-1px);
+  }
+
+  .start-hint {
+    font-size: 13px;
+    color: var(--text3);
+  }
+
+  /* ======================== INTERVIEW SCREEN ======================== */
+  #interviewScreen {
+    flex-direction: row;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 0;
+    overflow-y: auto;
+  }
+
+  .sidebar-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text);
+    padding: 0 20px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-logo span { color: var(--accent); }
+
+  .mode-pill {
+    margin: 16px 20px 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(200,245,90,0.08);
+    border: 1px solid rgba(200,245,90,0.2);
+    padding: 5px 10px;
+    border-radius: 6px;
+    text-align: center;
+  }
+
+  .sidebar-section {
+    padding: 20px 20px 0;
+  }
+
+  .sidebar-section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  /* SCORE CARD */
+  .score-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .score-main {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+
+  .score-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--text);
+  }
+
+  .score-denom {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    color: var(--text3);
+  }
+
+  .score-bar-wrap {
+    height: 4px;
+    background: var(--surface3);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .score-bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .metric-row:last-child { border-bottom: none; }
+
+  .metric-name {
+    font-size: 12px;
+    color: var(--text2);
+  }
+
+  .metric-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .metric-val.good { color: var(--success); }
+  .metric-val.mid { color: var(--warning); }
+  .metric-val.bad { color: var(--danger); }
+
+  .signal-list { margin-top: 8px; }
+
+  .signal-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0;
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.4;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .signal-item:last-child { border-bottom: none; }
+
+  .signal-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+
+  .signal-dot.hire { background: var(--hire); }
+  .signal-dot.risk { background: var(--reject); }
+
+  .q-counter {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text2);
+    padding: 16px 20px 0;
+  }
+
+  .sidebar-actions {
+    margin-top: auto;
+    padding: 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .sidebar-btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text2);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+  }
+
+  .sidebar-btn:hover {
+    border-color: var(--border2);
+    color: var(--text);
+    background: var(--surface2);
+  }
+
+  /* MAIN CHAT AREA */
+  .chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .chat-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 28px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .interviewer-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .interviewer-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--surface3);
+    border: 1px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .interviewer-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .interviewer-role {
+    font-size: 12px;
+    color: var(--text3);
+  }
+
+  .status-dot-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--success);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .chat-messages::-webkit-scrollbar { width: 4px; }
+  .chat-messages::-webkit-scrollbar-track { background: transparent; }
+  .chat-messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .message {
+    display: flex;
+    flex-direction: column;
+    max-width: 720px;
+    animation: fadeUp 0.3s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .message.user { align-self: flex-end; align-items: flex-end; }
+  .message.system { align-self: flex-start; }
+
+  .msg-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .msg-bubble {
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .message.system .msg-bubble {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 4px 12px 12px 12px;
+  }
+
+  .message.user .msg-bubble {
+    background: rgba(200,245,90,0.08);
+    border: 1px solid rgba(200,245,90,0.2);
+    color: var(--text);
+    border-radius: 12px 4px 12px 12px;
+  }
+
+  /* Feedback message */
+  .message.feedback .msg-bubble {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px 12px 12px 12px;
+  }
+
+  .message.feedback.strong .msg-bubble {
+    border-left-color: var(--success);
+  }
+
+  .message.feedback.weak .msg-bubble {
+    border-left-color: var(--danger);
+  }
+
+  .feedback-header {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    color: var(--accent);
+  }
+
+  .feedback-header.strong { color: var(--success); }
+  .feedback-header.weak { color: var(--danger); }
+
+  .feedback-rewrite {
+    background: var(--surface3);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text2);
+    margin-top: 10px;
+    font-style: italic;
+    line-height: 1.6;
+    border-left: 2px solid var(--accent);
+  }
+
+  .pattern-rule {
+    display: inline-block;
+    margin-top: 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--info);
+    background: rgba(74,180,255,0.08);
+    border: 1px solid rgba(74,180,255,0.2);
+    padding: 4px 10px;
+    border-radius: 4px;
+  }
+
+  /* Score update message */
+  .score-update-msg {
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 16px 20px;
+    max-width: 580px;
+    align-self: center;
+  }
+
+  .score-update-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 12px;
+  }
+
+  .score-update-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .score-update-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+  }
+
+  .score-update-item span:first-child { color: var(--text2); }
+  .score-update-item span:last-child {
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+  }
+
+  /* INPUT AREA */
+  .input-area {
+    padding: 20px 28px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .input-wrap {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+
+  .answer-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    resize: none;
+    min-height: 52px;
+    max-height: 160px;
+    line-height: 1.5;
+    transition: border-color 0.15s;
+    outline: none;
+  }
+
+  .answer-input::placeholder { color: var(--text3); }
+  .answer-input:focus { border-color: var(--accent); }
+
+  .send-btn {
+    width: 48px;
+    height: 48px;
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+
+  .send-btn:hover { background: var(--accent2); transform: translateY(-1px); }
+  .send-btn:active { transform: scale(0.97); }
+
+  .send-btn svg { color: #0a0a0a; }
+
+  .input-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+  }
+
+  .timer-display {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text3);
+  }
+
+  .timer-display.warn { color: var(--warning); }
+  .timer-display.over { color: var(--danger); }
+
+  .char-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  /* Loading dots */
+  .typing-indicator {
+    display: flex;
+    gap: 5px;
+    padding: 14px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px 12px 12px 12px;
+    width: fit-content;
+  }
+
+  .typing-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text3);
+    animation: typingBounce 1.2s infinite;
+  }
+
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes typingBounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-5px); }
+  }
+
+  /* Difficulty badge */
+  .diff-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid;
+  }
+
+  .diff-badge.easy { color: var(--success); border-color: rgba(74,255,138,0.2); background: rgba(74,255,138,0.06); }
+  .diff-badge.medium { color: var(--warning); border-color: rgba(255,184,74,0.2); background: rgba(255,184,74,0.06); }
+  .diff-badge.hard { color: var(--danger); border-color: rgba(255,90,74,0.2); background: rgba(255,90,74,0.06); }
+
+  /* Scrollbar for sidebar */
+  .sidebar::-webkit-scrollbar { width: 3px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* ======================== RESPONSIVE ======================== */
+  @media (max-width: 900px) {
+    .modes-grid { grid-template-columns: repeat(2, 1fr); padding: 0 24px 40px; }
+    .home-hero { padding: 48px 24px 40px; }
+    .home-header { padding: 16px 24px; }
+    .start-area { padding: 0 24px 40px; }
+    .sidebar { display: none; }
+    .chat-topbar { padding: 12px 16px; }
+    .chat-messages { padding: 20px 16px; }
+    .input-area { padding: 12px 16px; }
+  }
+
+  @media (max-width: 600px) {
+    .modes-grid { grid-template-columns: 1fr; }
+    .stats-row { gap: 20px; }
+  }
+
+  /* Highlight signal chips */
+  .signal-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .signal-chip {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid;
+  }
+
+  .signal-chip.hire {
+    color: var(--hire);
+    border-color: rgba(200,245,90,0.25);
+    background: rgba(200,245,90,0.05);
+  }
+
+  .signal-chip.risk {
+    color: var(--reject);
+    border-color: rgba(255,90,74,0.25);
+    background: rgba(255,90,74,0.05);
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== HOME SCREEN ==================== -->
+<div id="homeScreen" class="screen active">
+  <div class="home-header">
+    <div class="logo">UX<span>.</span>Engine</div>
+    <div class="target-chip">Mattress Firm — UX Designer</div>
+  </div>
+
+  <div class="home-hero">
+    <div class="hero-tag">// Adaptive Interview Training System</div>
+    <h1 class="hero-title">Train until<br>you <em>own</em> it.</h1>
+    <p class="hero-sub">Real-time simulation. Adaptive difficulty. Hiring signal tracking. Built to get you to 85–90% consistency before your Mattress Firm interview.</p>
+
+    <div class="stats-row">
+      <div class="stat-item">
+        <div class="stat-num">85–90%</div>
+        <div class="stat-label">Target score</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">16+</div>
+        <div class="stat-label">Questions</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">6</div>
+        <div class="stat-label">Hire signals</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">4</div>
+        <div class="stat-label">Interview types</div>
+      </div>
+    </div>
+
+    <div class="modes-label">// Select your mode</div>
+  </div>
+
+  <div class="modes-grid">
+    <div class="mode-card" onclick="selectMode('Full Interview', this)">
+      <div class="mode-num">01</div>
+      <div class="mode-name">Full Interview</div>
+      <div class="mode-desc">All question types, adaptive difficulty, end-to-end simulation with live scoring.</div>
+      <div class="mode-tag">All rounds</div>
+    </div>
+    <div class="mode-card" onclick="selectMode('Recruiter Screen', this)">
+      <div class="mode-num">02</div>
+      <div class="mode-name">Recruiter Screen</div>
+      <div class="mode-desc">Surface-level questions, tone calibration, 30-second answer drilling.</div>
+      <div class="mode-tag">Phone screen</div>
+    </div>
+    <div class="mode-card" onclick="selectMode('Hiring Manager', this)">
+      <div class="mode-num">03</div>
+      <div class="mode-name">Hiring Manager</div>
+      <div class="mode-desc">Strategy, culture fit, decision logic, business alignment under pressure.</div>
+      <div class="mode-tag">HM round</div>
+    </div>
+    <div class="mode-card" onclick="selectMode('Deep Dive', this)">
+      <div class="mode-num">04</div>
+      <div class="mode-name">Deep Dive</div>
+      <div class="mode-desc">Portfolio deep dives, brutal follow-ups, tradeoffs, and cross-functional pushback.</div>
+      <div class="mode-tag">High pressure</div>
+    </div>
+    <div class="mode-card" onclick="selectMode('Weak Areas Only', this)">
+      <div class="mode-num">05</div>
+      <div class="mode-name">Weak Areas Only</div>
+      <div class="mode-desc">Targets questions you've failed before. Rewires your weak spots until automatic.</div>
+      <div class="mode-tag">Drill mode</div>
+    </div>
+    <div class="mode-card" onclick="selectMode('Custom Mode', this)">
+      <div class="mode-num">06</div>
+      <div class="mode-name">Custom Mode</div>
+      <div class="mode-desc">Choose your interviewer persona, focus areas, and pressure level.</div>
+      <div class="mode-tag">Flexible</div>
+    </div>
+  </div>
+
+  <div class="start-area">
+    <button class="start-btn" id="startBtn" onclick="startInterview()">Select a mode</button>
+    <div class="start-hint" id="startHint">Choose a mode above to begin</div>
+  </div>
+</div>
+
+<!-- ==================== INTERVIEW SCREEN ==================== -->
+<div id="interviewScreen" class="screen">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-logo">UX<span>.</span>Engine</div>
+    <div class="mode-pill" id="modePill">Full Interview</div>
+
+    <div class="sidebar-section" style="margin-top: 20px;">
+      <div class="sidebar-section-label">Score</div>
+      <div class="score-card">
+        <div class="score-main">
+          <span class="score-num" id="scoreNum">—</span>
+          <span class="score-denom">/10</span>
+        </div>
+        <div class="score-bar-wrap">
+          <div class="score-bar" id="scoreBar" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div class="metric-row">
+        <span class="metric-name">Clarity</span>
+        <span class="metric-val" id="metClarity">—</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-name">UX Thinking</span>
+        <span class="metric-val" id="metUX">—</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-name">Confidence</span>
+        <span class="metric-val" id="metConf">—</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section" style="margin-top: 20px;">
+      <div class="sidebar-section-label">Hiring signals</div>
+      <div class="signal-list" id="signalList">
+        <div class="signal-item" style="color: var(--text3); font-style: italic;">No signals yet</div>
+      </div>
+    </div>
+
+    <div class="q-counter" id="qCounter">Question 0 of session</div>
+
+    <div class="sidebar-actions">
+      <button class="sidebar-btn" onclick="restartSession()">↩ Restart session</button>
+      <button class="sidebar-btn" onclick="goHome()">← Change mode</button>
+    </div>
+  </div>
+
+  <!-- MAIN CHAT -->
+  <div class="chat-area">
+    <div class="chat-topbar">
+      <div class="interviewer-info">
+        <div class="interviewer-avatar" id="ivAvatar">HM</div>
+        <div>
+          <div class="interviewer-name" id="ivName">Hiring Manager</div>
+          <div class="interviewer-role" id="ivRole">Mattress Firm · UX Design Team</div>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span class="diff-badge medium" id="diffBadge">Medium</span>
+        <div class="status-dot-wrap">
+          <div class="status-dot"></div>
+          <span>Live</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-messages" id="chatMessages"></div>
+
+    <div class="input-area">
+      <div class="input-wrap">
+        <textarea
+          class="answer-input"
+          id="answerInput"
+          placeholder="Type your answer... aim for 30–60 seconds of speech"
+          rows="2"
+          onkeydown="handleKey(event)"
+          oninput="handleInput()"
+        ></textarea>
+        <button class="send-btn" onclick="submitAnswer()" title="Send answer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+      <div class="input-meta">
+        <div class="timer-display" id="timerDisplay">⏱ 0:00</div>
+        <div class="char-count" id="charCount">0 chars</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+const STATE = {
+  mode: '',
+  questionIndex: 0,
+  score: null,
+  metrics: { clarity: null, ux: null, confidence: null },
+  signals: [],
+  weakAreas: [],
+  difficulty: 'medium',
+  interviewerPersona: 'HM',
+  timerInterval: null,
+  timerSeconds: 0,
+  isWaiting: false,
+  conversationHistory: [],
+  questionsAsked: 0,
+};
+
+const PERSONAS = {
+  'Full Interview': { name: 'Alex Rivera', role: 'Hiring Manager · UX Design Team', avatar: 'AR' },
+  'Recruiter Screen': { name: 'Jordan Lee', role: 'Recruiter · Mattress Firm', avatar: 'JL' },
+  'Hiring Manager': { name: 'Sam Chen', role: 'Director of UX · Mattress Firm', avatar: 'SC' },
+  'Deep Dive': { name: 'Morgan Walsh', role: 'Principal PM · Cross-functional Panel', avatar: 'MW' },
+  'Weak Areas Only': { name: 'Alex Rivera', role: 'Hiring Manager · Drill Session', avatar: 'AR' },
+  'Custom Mode': { name: 'Taylor Kim', role: 'Lead UX Engineer · Technical Panel', avatar: 'TK' },
+};
+
+// ============================================================
+// SYSTEM PROMPT BUILDER
+// ============================================================
+function buildSystemPrompt(mode) {
+  return `You are a real-time UX interview simulation engine. You are conducting a "${mode}" interview for a UX Designer role at Mattress Firm.
+
+RULES:
+1. Ask ONE question at a time. Never ask multiple questions.
+2. Wait for the candidate's answer before responding.
+3. After each answer, provide structured feedback in this exact JSON format (nothing else, no preamble):
+
+{
+  "score": <number 1-10>,
+  "clarity": "<Strong|Good|Weak>",
+  "ux_thinking": "<Strong|Good|Weak>",
+  "confidence": "<Strong|Good|Weak>",
+  "strength": "<1 thing they did well OR null>",
+  "weakness": "<1 specific failure pattern OR null>",
+  "rewrite": "<rewritten answer in candidate's natural voice, 50-80 words OR null if strong>",
+  "pattern_rule": "<a short rule like 'Lead with user, not UI' OR null if strong>",
+  "hire_signals": ["<signal>", ...],
+  "risk_signals": ["<risk>", ...],
+  "difficulty_next": "<easier|same|harder>",
+  "next_question": "<the next interview question to ask>",
+  "interviewer_reaction": "<a short 1-sentence hiring manager reaction, direct and honest>"
+}
+
+INTERVIEW MODE: ${mode}
+
+FAILURE PATTERNS to flag immediately:
+- Talking about tools instead of thinking
+- Describing visuals without explaining the problem
+- No validation or testing mentioned
+- No collaboration mentioned
+- Rambling answers (too long/unfocused)
+- Ignoring business context
+
+HIRE SIGNALS to track:
+- Talks about user first
+- Explains reasoning clearly
+- Mentions iteration naturally
+- Acknowledges business goals
+- Considers engineering constraints
+- Simplifies complex information
+
+CORE NARRATIVE to reinforce: The candidate's focus is helping users make better decisions by simplifying complex information. They have real Mattress Firm customer experience that informs their digital design thinking.
+
+REQUIRED ANSWER STRUCTURE (correct them if missing):
+User → Problem → Design Decision → Outcome → Iteration
+
+ANSWER LENGTH: Ideal answers are 30-60 seconds of speech (~80-120 words). Flag if too short or too long.
+
+DIFFICULTY ADAPTATION:
+- Strong answer → increase difficulty (follow-ups, tradeoffs, pushback)
+- Weak answer → simplify, then reintroduce later
+- Robotic answer → force rewrite in natural tone
+
+START NOW: Ask your first question appropriate for "${mode}" mode. Output ONLY the question text with no JSON for the opening question.`;
+}
+
+// ============================================================
+// HOME SCREEN
+// ============================================================
+let selectedMode = null;
+
+function selectMode(mode, el) {
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedMode = mode;
+  const btn = document.getElementById('startBtn');
+  btn.textContent = 'Start → ' + mode;
+  btn.classList.add('ready');
+  document.getElementById('startHint').textContent = 'Ready when you are.';
+}
+
+function startInterview() {
+  if (!selectedMode) return;
+  STATE.mode = selectedMode;
+  STATE.conversationHistory = [];
+  STATE.questionsAsked = 0;
+  STATE.score = null;
+
+  const persona = PERSONAS[selectedMode] || PERSONAS['Full Interview'];
+  document.getElementById('ivName').textContent = persona.name;
+  document.getElementById('ivRole').textContent = persona.role;
+  document.getElementById('ivAvatar').textContent = persona.avatar;
+  document.getElementById('modePill').textContent = selectedMode;
+
+  document.getElementById('homeScreen').classList.remove('active');
+  document.getElementById('interviewScreen').classList.add('active');
+
+  document.getElementById('chatMessages').innerHTML = '';
+  updateSidebar();
+
+  // Kick off first question
+  getFirstQuestion();
+}
+
+function goHome() {
+  document.getElementById('interviewScreen').classList.remove('active');
+  document.getElementById('homeScreen').classList.add('active');
+  clearTimer();
+}
+
+function restartSession() {
+  STATE.conversationHistory = [];
+  STATE.questionsAsked = 0;
+  STATE.score = null;
+  STATE.signals = [];
+  document.getElementById('chatMessages').innerHTML = '';
+  updateSidebar();
+  getFirstQuestion();
+}
+
+// ============================================================
+// ANTHROPIC API
+// ============================================================
+async function callClaude(messages) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      system: buildSystemPrompt(STATE.mode),
+      messages: messages,
+    })
+  });
+  const data = await res.json();
+  return data.content?.[0]?.text || '';
+}
+
+// ============================================================
+// FIRST QUESTION
+// ============================================================
+async function getFirstQuestion() {
+  showTyping();
+  try {
+    const text = await callClaude([{ role: 'user', content: 'Begin the interview.' }]);
+    hideTyping();
+    STATE.conversationHistory.push({ role: 'assistant', content: text });
+    STATE.questionsAsked++;
+    addSystemMessage(text);
+    updateQCounter();
+    startTimer();
+  } catch(e) {
+    hideTyping();
+    addSystemMessage("There was an issue connecting to the AI engine. Please check your connection and try again.");
+  }
+}
+
+// ============================================================
+// SUBMIT ANSWER
+// ============================================================
+async function submitAnswer() {
+  const input = document.getElementById('answerInput');
+  const answer = input.value.trim();
+  if (!answer || STATE.isWaiting) return;
+
+  STATE.isWaiting = true;
+  clearTimer();
+  input.value = '';
+  document.getElementById('charCount').textContent = '0 chars';
+  document.getElementById('timerDisplay').textContent = '⏱ 0:00';
+
+  addUserMessage(answer);
+  STATE.conversationHistory.push({ role: 'user', content: answer });
+
+  showTyping();
+
+  try {
+    const response = await callClaude(STATE.conversationHistory);
+    hideTyping();
+
+    // Try to parse JSON
+    let parsed = null;
+    try {
+      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      if (jsonMatch) parsed = JSON.parse(jsonMatch[0]);
+    } catch(e) {}
+
+    if (parsed) {
+      processFeedback(parsed);
+    } else {
+      // Fallback: treat as plain question
+      addSystemMessage(response);
+      STATE.conversationHistory.push({ role: 'assistant', content: response });
+      STATE.questionsAsked++;
+      updateQCounter();
+    }
+  } catch(e) {
+    hideTyping();
+    addSystemMessage('Connection issue. Please try again.');
+  }
+
+  STATE.isWaiting = false;
+  startTimer();
+}
+
+// ============================================================
+// PROCESS FEEDBACK
+// ============================================================
+function processFeedback(data) {
+  // Update score
+  if (data.score) {
+    STATE.score = data.score;
+    document.getElementById('scoreNum').textContent = data.score;
+    document.getElementById('scoreBar').style.width = (data.score * 10) + '%';
+  }
+
+  // Update metrics
+  if (data.clarity) {
+    STATE.metrics.clarity = data.clarity;
+    updateMetric('metClarity', data.clarity);
+  }
+  if (data.ux_thinking) {
+    STATE.metrics.ux = data.ux_thinking;
+    updateMetric('metUX', data.ux_thinking);
+  }
+  if (data.confidence) {
+    STATE.metrics.confidence = data.confidence;
+    updateMetric('metConf', data.confidence);
+  }
+
+  // Update signals
+  if (data.hire_signals?.length || data.risk_signals?.length) {
+    updateSignals(data.hire_signals || [], data.risk_signals || []);
+  }
+
+  // Difficulty
+  if (data.difficulty_next) {
+    STATE.difficulty = data.difficulty_next === 'harder' ? 'hard' : data.difficulty_next === 'easier' ? 'easy' : 'medium';
+    const badge = document.getElementById('diffBadge');
+    badge.className = 'diff-badge ' + STATE.difficulty;
+    badge.textContent = STATE.difficulty.charAt(0).toUpperCase() + STATE.difficulty.slice(1);
+  }
+
+  // Show feedback message
+  const isStrong = data.score >= 7;
+  const isWeak = data.score <= 5;
+
+  let feedbackHtml = '';
+
+  if (data.interviewer_reaction) {
+    feedbackHtml += `<div style="margin-bottom: 10px; color: var(--text2); font-size: 14px; font-style: italic;">"${data.interviewer_reaction}"</div>`;
+  }
+
+  if (isStrong && data.strength) {
+    feedbackHtml += `<div class="feedback-header strong">✓ Strong</div><div style="font-size: 13px; color: var(--text2);">${data.strength}</div>`;
+  }
+
+  if (isWeak) {
+    if (data.weakness) {
+      feedbackHtml += `<div class="feedback-header weak">✗ Not passing</div><div style="font-size: 13px; color: var(--text2); margin-bottom: 8px;">${data.weakness}</div>`;
+    }
+    if (data.rewrite) {
+      feedbackHtml += `<div class="feedback-rewrite">${data.rewrite}</div>`;
+    }
+    if (data.pattern_rule) {
+      feedbackHtml += `<div class="pattern-rule">Rule: ${data.pattern_rule}</div>`;
+    }
+  }
+
+  if (data.hire_signals?.length) {
+    feedbackHtml += `<div class="signal-chips" style="margin-top: 10px;">`;
+    data.hire_signals.forEach(s => feedbackHtml += `<span class="signal-chip hire">✓ ${s}</span>`);
+    feedbackHtml += `</div>`;
+  }
+
+  if (data.risk_signals?.length) {
+    if (!feedbackHtml.includes('signal-chips')) {
+      feedbackHtml += `<div class="signal-chips" style="margin-top: 10px;">`;
+    } else {
+      feedbackHtml = feedbackHtml.slice(0, -6); // remove last </div>
+    }
+    data.risk_signals.forEach(s => feedbackHtml += `<span class="signal-chip risk">✗ ${s}</span>`);
+    feedbackHtml += `</div>`;
+  }
+
+  const feedbackType = isStrong ? 'strong' : isWeak ? 'weak' : '';
+  addFeedbackMessage(feedbackHtml, feedbackType);
+
+  // Score update every ~4 questions
+  STATE.questionsAsked++;
+  if (STATE.questionsAsked % 4 === 0) {
+    addScoreUpdate();
+  }
+
+  // Next question
+  if (data.next_question) {
+    setTimeout(() => {
+      addSystemMessage(data.next_question);
+      STATE.conversationHistory.push({ role: 'assistant', content: data.next_question });
+      updateQCounter();
+    }, 600);
+  }
+
+  updateSidebar();
+}
+
+// ============================================================
+// UI HELPERS
+// ============================================================
+function addSystemMessage(text) {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'message system';
+  div.innerHTML = `<div class="msg-label">Interviewer</div><div class="msg-bubble">${escHtml(text)}</div>`;
+  msgs.appendChild(div);
+  scrollBottom();
+}
+
+function addUserMessage(text) {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'message user';
+  div.innerHTML = `<div class="msg-label">You</div><div class="msg-bubble">${escHtml(text)}</div>`;
+  msgs.appendChild(div);
+  scrollBottom();
+}
+
+function addFeedbackMessage(html, type) {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = `message feedback ${type}`;
+  div.innerHTML = `<div class="msg-label">Feedback</div><div class="msg-bubble">${html}</div>`;
+  msgs.appendChild(div);
+  scrollBottom();
+}
+
+function addScoreUpdate() {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'score-update-msg';
+
+  const score = STATE.score || '—';
+  const clarity = STATE.metrics.clarity || '—';
+  const ux = STATE.metrics.ux || '—';
+  const conf = STATE.metrics.confidence || '—';
+
+  div.innerHTML = `
+    <div class="score-update-title">— Score Update —</div>
+    <div class="score-update-grid">
+      <div class="score-update-item"><span>Overall</span><span style="color: var(--accent)">${score}/10</span></div>
+      <div class="score-update-item"><span>Clarity</span><span style="color: ${metColor(clarity)}">${clarity}</span></div>
+      <div class="score-update-item"><span>UX Thinking</span><span style="color: ${metColor(ux)}">${ux}</span></div>
+      <div class="score-update-item"><span>Confidence</span><span style="color: ${metColor(conf)}">${conf}</span></div>
+    </div>`;
+  msgs.appendChild(div);
+  scrollBottom();
+}
+
+function metColor(val) {
+  if (val === 'Strong') return 'var(--success)';
+  if (val === 'Good') return 'var(--warning)';
+  if (val === 'Weak') return 'var(--danger)';
+  return 'var(--text3)';
+}
+
+function updateMetric(id, val) {
+  const el = document.getElementById(id);
+  el.textContent = val;
+  el.className = 'metric-val ' + (val === 'Strong' ? 'good' : val === 'Weak' ? 'bad' : 'mid');
+}
+
+function updateSignals(hire, risk) {
+  const list = document.getElementById('signalList');
+  list.innerHTML = '';
+  hire.slice(-3).forEach(s => {
+    list.innerHTML += `<div class="signal-item"><div class="signal-dot hire"></div>${s}</div>`;
+  });
+  risk.slice(-2).forEach(s => {
+    list.innerHTML += `<div class="signal-item"><div class="signal-dot risk"></div>${s}</div>`;
+  });
+  if (!list.innerHTML) {
+    list.innerHTML = `<div class="signal-item" style="color: var(--text3); font-style: italic;">No signals yet</div>`;
+  }
+}
+
+function updateSidebar() {
+  if (STATE.score !== null) {
+    document.getElementById('scoreNum').textContent = STATE.score;
+    document.getElementById('scoreBar').style.width = (STATE.score * 10) + '%';
+  }
+  updateQCounter();
+}
+
+function updateQCounter() {
+  document.getElementById('qCounter').textContent = `Question ${STATE.questionsAsked} of session`;
+}
+
+let typingEl = null;
+function showTyping() {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'message system';
+  div.id = 'typingMsg';
+  div.innerHTML = `<div class="msg-label">Interviewer</div><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+  msgs.appendChild(div);
+  scrollBottom();
+}
+
+function hideTyping() {
+  const el = document.getElementById('typingMsg');
+  if (el) el.remove();
+}
+
+function scrollBottom() {
+  const msgs = document.getElementById('chatMessages');
+  setTimeout(() => { msgs.scrollTop = msgs.scrollHeight; }, 50);
+}
+
+function escHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+}
+
+// ============================================================
+// TIMER
+// ============================================================
+function startTimer() {
+  clearTimer();
+  STATE.timerSeconds = 0;
+  STATE.timerInterval = setInterval(() => {
+    STATE.timerSeconds++;
+    const m = Math.floor(STATE.timerSeconds / 60);
+    const s = STATE.timerSeconds % 60;
+    const disp = `⏱ ${m}:${s.toString().padStart(2, '0')}`;
+    const el = document.getElementById('timerDisplay');
+    el.textContent = disp;
+    if (STATE.timerSeconds > 90) {
+      el.className = 'timer-display over';
+    } else if (STATE.timerSeconds > 60) {
+      el.className = 'timer-display warn';
+    } else {
+      el.className = 'timer-display';
+    }
+  }, 1000);
+}
+
+function clearTimer() {
+  if (STATE.timerInterval) { clearInterval(STATE.timerInterval); STATE.timerInterval = null; }
+}
+
+// ============================================================
+// INPUT EVENTS
+// ============================================================
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    submitAnswer();
+  }
+  // Auto-resize
+  const ta = e.target;
+  ta.style.height = 'auto';
+  ta.style.height = Math.min(ta.scrollHeight, 160) + 'px';
+}
+
+function handleInput() {
+  const ta = document.getElementById('answerInput');
+  document.getElementById('charCount').textContent = ta.value.length + ' chars';
+  ta.style.height = 'auto';
+  ta.style.height = Math.min(ta.scrollHeight, 160) + 'px';
+}
+</script>
+</body>
+</html>
