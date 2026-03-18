@@ -2,768 +2,360 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>UX Interview Engine — Mattress Firm</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Torrance — Interview Trainer</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0a0a0a;--surface:#111;--surface2:#1a1a1a;--surface3:#222;--border:#2a2a2a;--border2:#363636;--accent:#c8f55a;--accent2:#a8d93a;--text:#f0ede8;--text2:#9a9590;--text3:#5a5550;--danger:#ff5a4a;--success:#4aff8a;--warning:#ffb84a;--info:#4ab4ff;}
-*{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;}
-.screen{display:none;min-height:100vh;flex-direction:column;}
-.screen.active{display:flex;}
-/* HOME */
-.home-nav{display:flex;align-items:center;justify-content:space-between;padding:20px 28px;border-bottom:1px solid var(--border);}
-.logo{font-family:'Syne',sans-serif;font-size:13px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;}
-.logo span{color:var(--accent);}
-.target-chip{font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);background:rgba(200,245,90,.08);border:1px solid rgba(200,245,90,.2);padding:5px 12px;border-radius:100px;}
-.home-hero{padding:52px 28px 36px;max-width:860px;}
-.hero-eyebrow{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px;}
-.hero-title{font-family:'Syne',sans-serif;font-size:clamp(38px,8vw,68px);font-weight:800;line-height:.95;letter-spacing:-.02em;margin-bottom:24px;}
-.hero-title em{font-style:normal;color:var(--accent);}
-.hero-sub{font-size:15px;color:var(--text2);line-height:1.7;max-width:440px;margin-bottom:40px;}
-.stats-row{display:flex;gap:28px;flex-wrap:wrap;margin-bottom:48px;}
-.stat-num{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;}
-.stat-lbl{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
-.modes-section{padding:0 28px 40px;}
-.modes-lbl{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;}
-.modes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;}
-.mode-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;cursor:pointer;transition:all .18s;position:relative;overflow:hidden;}
-.mode-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .2s;}
-.mode-card:hover{border-color:var(--border2);background:var(--surface2);transform:translateY(-2px);}
-.mode-card:hover::after,.mode-card.sel::after{transform:scaleX(1);}
-.mode-card.sel{border-color:var(--accent);background:rgba(200,245,90,.05);}
-.mode-num{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);margin-bottom:14px;}
-.mode-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:6px;}
-.mode-card.sel .mode-name{color:var(--accent);}
-.mode-desc{font-size:12px;color:var(--text2);line-height:1.5;}
-.mode-tag{display:inline-block;margin-top:14px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);border:1px solid var(--border);padding:3px 8px;border-radius:4px;}
-.mode-card.sel .mode-tag{color:var(--accent);border-color:rgba(200,245,90,.3);}
-.start-area{padding:0 28px 52px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
-.start-btn{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;background:var(--accent);color:#0a0a0a;border:none;padding:14px 32px;border-radius:8px;cursor:pointer;opacity:.35;pointer-events:none;transition:all .15s;letter-spacing:.04em;}
-.start-btn.ready{opacity:1;pointer-events:all;}
-.start-btn.ready:hover{background:var(--accent2);transform:translateY(-1px);}
-.start-hint{font-size:13px;color:var(--text3);}
-/* INTERVIEW */
-#interviewScreen{flex-direction:row;height:100vh;overflow:hidden;}
-.sidebar{width:240px;min-width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:20px 0;overflow-y:auto;}
-.sb-logo{font-family:'Syne',sans-serif;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:0 18px 18px;border-bottom:1px solid var(--border);}
-.sb-logo span{color:var(--accent);}
-.mode-pill{margin:14px 18px 0;font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);background:rgba(200,245,90,.08);border:1px solid rgba(200,245,90,.2);padding:5px 10px;border-radius:6px;text-align:center;}
-.sb-sec{padding:18px 18px 0;}
-.sb-sec-lbl{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;}
-.score-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
-.score-main{display:flex;align-items:baseline;gap:3px;margin-bottom:10px;}
-.score-num{font-family:'Syne',sans-serif;font-size:34px;font-weight:800;}
-.score-den{font-family:'Syne',sans-serif;font-size:16px;color:var(--text3);}
-.score-bar-bg{height:3px;background:var(--surface3);border-radius:2px;overflow:hidden;}
-.score-bar-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .5s ease;width:0%;}
-.met-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);}
-.met-row:last-child{border-bottom:none;}
-.met-name{font-size:12px;color:var(--text2);}
-.met-val{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;}
-.good{color:var(--success);}.mid{color:var(--warning);}.bad{color:var(--danger);}
-.sig-list{margin-top:4px;}
-.sig-item{display:flex;align-items:flex-start;gap:7px;padding:5px 0;font-size:11px;color:var(--text2);line-height:1.4;border-bottom:1px solid var(--border);}
-.sig-item:last-child{border-bottom:none;}
-.sig-dot{width:5px;height:5px;border-radius:50%;margin-top:3px;flex-shrink:0;}
-.sig-dot.hire{background:var(--accent);}.sig-dot.risk{background:var(--danger);}
-.q-ctr{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);padding:14px 18px 0;}
-.sb-actions{margin-top:auto;padding:16px 18px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:7px;}
-.sb-btn{font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text2);background:transparent;border:1px solid var(--border);border-radius:6px;padding:7px 10px;cursor:pointer;text-align:left;transition:all .15s;}
-.sb-btn:hover{border-color:var(--border2);color:var(--text);background:var(--surface2);}
-/* CHAT */
-.chat-area{flex:1;display:flex;flex-direction:column;overflow:hidden;}
-.chat-topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;border-bottom:1px solid var(--border);background:var(--surface);}
-.iv-info{display:flex;align-items:center;gap:10px;}
-.iv-avatar{width:34px;height:34px;border-radius:50%;background:var(--surface3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;flex-shrink:0;}
-.iv-name{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;}
-.iv-role{font-size:11px;color:var(--text3);}
-.topbar-right{display:flex;align-items:center;gap:10px;}
-.diff-badge{font-family:'DM Mono',monospace;font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid;}
-.diff-badge.easy{color:var(--success);border-color:rgba(74,255,138,.2);background:rgba(74,255,138,.06);}
-.diff-badge.medium{color:var(--warning);border-color:rgba(255,184,74,.2);background:rgba(255,184,74,.06);}
-.diff-badge.hard{color:var(--danger);border-color:rgba(255,90,74,.2);background:rgba(255,90,74,.06);}
-.live-dot-wrap{display:flex;align-items:center;gap:6px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);}
-.live-dot{width:6px;height:6px;border-radius:50%;background:var(--success);animation:pulse 2s infinite;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
-.chat-msgs{flex:1;overflow-y:auto;padding:28px 22px;display:flex;flex-direction:column;gap:16px;}
-.chat-msgs::-webkit-scrollbar{width:3px;}
-.chat-msgs::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
-.msg{display:flex;flex-direction:column;max-width:680px;animation:fadeUp .25s ease;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-.msg.user{align-self:flex-end;align-items:flex-end;}
-.msg.sys,.msg.fb{align-self:flex-start;}
-.msg-lbl{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px;}
-.bubble{padding:13px 16px;border-radius:12px;font-size:14px;line-height:1.65;}
-.msg.sys .bubble{background:var(--surface);border:1px solid var(--border);border-radius:4px 12px 12px 12px;}
-.msg.user .bubble{background:rgba(200,245,90,.08);border:1px solid rgba(200,245,90,.2);border-radius:12px 4px 12px 12px;}
-.msg.fb .bubble{background:var(--surface2);border:1px solid var(--border2);border-left:3px solid var(--accent);border-radius:4px 12px 12px 12px;}
-.msg.fb.strong .bubble{border-left-color:var(--success);}
-.msg.fb.weak .bubble{border-left-color:var(--danger);}
-.fb-head{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:7px;color:var(--accent);}
-.fb-head.strong{color:var(--success);}.fb-head.weak{color:var(--danger);}
-.fb-rewrite{background:var(--surface3);border-radius:6px;padding:9px 11px;font-size:13px;color:var(--text2);margin-top:9px;font-style:italic;line-height:1.6;border-left:2px solid var(--accent);}
-.pattern-rule{display:inline-block;margin-top:9px;font-family:'DM Mono',monospace;font-size:10px;color:var(--info);background:rgba(74,180,255,.08);border:1px solid rgba(74,180,255,.2);padding:3px 9px;border-radius:4px;}
-.sig-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;}
-.sig-chip{font-family:'DM Mono',monospace;font-size:10px;padding:3px 7px;border-radius:4px;border:1px solid;}
-.sig-chip.hire{color:var(--accent);border-color:rgba(200,245,90,.25);background:rgba(200,245,90,.05);}
-.sig-chip.risk{color:var(--danger);border-color:rgba(255,90,74,.25);background:rgba(255,90,74,.05);}
-.score-update{border:1px solid var(--border);background:var(--surface2);border-radius:10px;padding:14px 18px;max-width:520px;align-self:center;width:100%;}
-.su-title{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;text-align:center;}
-.su-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
-.su-item{display:flex;justify-content:space-between;font-size:12px;}
-.su-item span:first-child{color:var(--text2);}
-.su-item span:last-child{font-family:'DM Mono',monospace;font-weight:500;}
-.typing-wrap{display:flex;gap:5px;padding:13px 16px;background:var(--surface);border:1px solid var(--border);border-radius:4px 12px 12px 12px;width:fit-content;}
-.t-dot{width:5px;height:5px;border-radius:50%;background:var(--text3);animation:tb 1.2s infinite;}
-.t-dot:nth-child(2){animation-delay:.2s;}.t-dot:nth-child(3){animation-delay:.4s;}
-@keyframes tb{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-5px);}}
-/* INPUT */
-.input-area{padding:16px 22px;border-top:1px solid var(--border);background:var(--surface);}
-.input-wrap{display:flex;gap:8px;align-items:flex-end;}
-.ans-input{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);resize:none;min-height:48px;max-height:140px;line-height:1.5;outline:none;transition:border-color .15s;}
-.ans-input::placeholder{color:var(--text3);}
-.ans-input:focus{border-color:var(--accent);}
-.send-btn{width:44px;height:44px;background:var(--accent);border:none;border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
-.send-btn:hover{background:var(--accent2);}
-.send-btn:active{transform:scale(.97);}
-.input-meta{display:flex;justify-content:space-between;margin-top:7px;}
-.timer{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);}
-.timer.warn{color:var(--warning);}.timer.over{color:var(--danger);}
-.char-ct{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);}
-@media(max-width:700px){
-  .sidebar{display:none;}
-  #interviewScreen{flex-direction:column;}
-  .chat-topbar{padding:10px 14px;}
-  .chat-msgs{padding:18px 14px;}
-  .input-area{padding:10px 14px;}
-  .modes-grid{grid-template-columns:1fr;}
-  .home-hero{padding:36px 18px 28px;}
-  .modes-section{padding:0 18px 32px;}
-  .start-area{padding:0 18px 40px;}
-  .home-nav{padding:16px 18px;}
-}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--red:#C8102E;--dark:#1a1d23;--mid:#4a5568;--muted:#8492a6;--border:#e2e8f0;--bg:#f5f6f8;--white:#fff;--green:#16a34a;--green-bg:#f0fdf4;--red-light:#fdecea;--navy:#1B2A4A;--amber:#b45309;--amber-bg:#fefce8;--amber-bd:#fde68a}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);min-height:100vh;padding:20px 16px 40px}
+.container{max-width:600px;margin:0 auto}
+.header{text-align:center;margin-bottom:20px}
+.header-tag{display:inline-block;background:var(--navy);color:#fff;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px}
+.header-title{font-size:24px;font-weight:800;color:var(--dark);margin-bottom:3px}
+.header-sub{font-size:13px;color:var(--mid)}
+.mode-row{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:2px}
+.mode-btn{background:var(--white);border:1.5px solid var(--border);border-radius:50px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;color:var(--mid);transition:all 0.15s;flex-shrink:0}
+.mode-btn.active{background:var(--dark);color:#fff;border-color:var(--dark)}
+.score-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.score-box{background:var(--white);border:0.5px solid var(--border);border-radius:10px;padding:10px;text-align:center}
+.score-num{font-size:22px;font-weight:800;color:var(--dark)}
+.score-num.good{color:var(--green)}
+.score-num.bad{color:var(--red)}
+.score-lab{font-size:10px;color:var(--muted);margin-top:1px}
+.progress-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.progress-track{flex:1;height:5px;background:var(--border);border-radius:3px}
+.progress-fill{height:100%;background:var(--red);border-radius:3px;transition:width 0.4s ease}
+.progress-label{font-size:12px;font-weight:600;color:var(--mid);white-space:nowrap}
+.state-indicator{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:12px}
+.state-dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--border);transition:all 0.2s}
+.state-dot.active-q{background:var(--red);border-color:var(--red)}
+.state-dot.active-a{background:var(--green);border-color:var(--green)}
+.state-dot.active-t{background:var(--navy);border-color:var(--navy)}
+.state-label{font-size:12px;color:var(--mid);font-weight:500}
+.card-area{margin-bottom:14px}
+.q-card{background:var(--white);border:1.5px solid var(--border);border-top:4px solid var(--red);border-radius:14px;padding:22px 20px;margin-bottom:10px}
+.q-card.curveball{border-top-color:var(--amber)}
+.q-card-type{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px}
+.q-card-type.curve{color:var(--amber)}
+.q-card-text{font-size:19px;font-weight:700;color:var(--dark);line-height:1.3;margin-bottom:8px}
+.q-card-hint{font-size:12px;color:var(--muted);font-style:italic}
+.a-card-wrap{perspective:1000px}
+.a-card-inner{position:relative;width:100%;transition:transform 0.45s ease;transform-style:preserve-3d;min-height:160px}
+.a-card-wrap.flipped .a-card-inner{transform:rotateY(180deg)}
+.a-face{backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:14px;padding:20px;min-height:160px;display:flex;flex-direction:column;justify-content:center}
+.a-face.front{background:var(--green-bg);border:1.5px solid #86efac;border-top:4px solid var(--green)}
+.a-face.front.curve{background:var(--amber-bg);border:1.5px solid var(--amber-bd);border-top:4px solid var(--amber)}
+.a-face.back{position:absolute;top:0;left:0;width:100%;transform:rotateY(180deg);background:var(--navy);border:1.5px solid #334155;border-top:4px solid #475569;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px}
+.a-face-type{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;color:var(--green)}
+.a-face-type.curve{color:var(--amber)}
+.a-face-text{font-size:14px;color:var(--dark);line-height:1.7}
+.a-face-text strong{color:var(--red);font-weight:700}
+.a-face-text.curve strong{color:var(--amber)}
+.back-icon{font-size:32px;opacity:0.4}
+.back-text{font-size:15px;font-weight:700;color:rgba(255,255,255,0.6)}
+.back-sub{font-size:12px;color:rgba(255,255,255,0.35);text-align:center}
+.btn-full{width:100%;padding:14px;border:none;border-radius:50px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.15s;margin-bottom:8px}
+.btn-show{background:var(--red);color:#fff}
+.btn-show:hover{opacity:0.9}
+.btn-hide{background:var(--navy);color:#fff}
+.btn-hide:hover{opacity:0.85}
+.btn-grade-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
+.btn-got{background:var(--green);color:#fff;padding:14px;border:none;border-radius:50px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.btn-got:hover{opacity:0.9}
+.btn-miss{background:var(--red-light);color:var(--red);padding:14px;border:1.5px solid #fca5a5;border-radius:50px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.btn-miss:hover{background:#fecaca}
+.btn-next{background:var(--dark);color:#fff;width:100%;padding:14px;border:none;border-radius:50px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.btn-next:hover{opacity:0.85}
+.instruction{text-align:center;background:var(--white);border:0.5px solid var(--border);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--mid);margin-bottom:14px;line-height:1.5}
+.instruction strong{color:var(--dark)}
+.curve-badge{display:inline-block;background:var(--amber-bg);border:1px solid var(--amber-bd);color:var(--amber);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:6px;letter-spacing:0.04em}
+.results{display:none;text-align:center;padding:28px 16px}
+.results-emoji{font-size:44px;margin-bottom:10px}
+.results-title{font-size:24px;font-weight:800;color:var(--dark);margin-bottom:6px}
+.results-sub{font-size:13px;color:var(--mid);margin-bottom:20px;line-height:1.6;max-width:400px;margin-left:auto;margin-right:auto}
+.results-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.result-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px}
+.result-card .num{font-size:28px;font-weight:800}
+.result-card .lab{font-size:11px;color:var(--muted);margin-top:2px}
+.result-card.good .num{color:var(--green)}
+.result-card.bad .num{color:var(--red)}
+.btn-restart{background:var(--red);color:#fff;border:none;border-radius:50px;padding:14px 28px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-right:8px;margin-bottom:8px}
+.btn-missed-only{background:var(--white);color:var(--dark);border:1.5px solid var(--border);border-radius:50px;padding:14px 28px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:8px}
 </style>
 </head>
 <body>
+<div class="container">
 
-<div id="homeScreen" class="screen active">
-  <nav class="home-nav">
-    <div class="logo">UX<span>.</span>Engine</div>
-    <div class="target-chip">Mattress Firm — UX Designer</div>
-  </nav>
-  <div class="home-hero">
-    <div class="hero-eyebrow">// Adaptive Interview Training System</div>
-    <h1 class="hero-title">Train until<br>you <em>own</em> it.</h1>
-    <p class="hero-sub">Real-time simulation. Adaptive difficulty. Hiring signal tracking. Works 100% offline — no API, no backend, no setup.</p>
-    <div class="stats-row">
-      <div><div class="stat-num">85–90%</div><div class="stat-lbl">Target score</div></div>
-      <div><div class="stat-num">55+</div><div class="stat-lbl">Questions</div></div>
-      <div><div class="stat-num">6</div><div class="stat-lbl">Hire signals</div></div>
-      <div><div class="stat-num">6</div><div class="stat-lbl">Modes</div></div>
-    </div>
-  </div>
-  <div class="modes-section">
-    <div class="modes-lbl">// Select your mode</div>
-    <div class="modes-grid">
-      <div class="mode-card" onclick="pickMode('Full Interview',this)">
-        <div class="mode-num">01</div><div class="mode-name">Full Interview</div>
-        <div class="mode-desc">All question types, adaptive difficulty, end-to-end simulation with live scoring.</div>
-        <div class="mode-tag">All rounds</div>
-      </div>
-      <div class="mode-card" onclick="pickMode('Recruiter Screen',this)">
-        <div class="mode-num">02</div><div class="mode-name">Recruiter Screen</div>
-        <div class="mode-desc">Surface-level questions, tone calibration, 30-second answer drilling.</div>
-        <div class="mode-tag">Phone screen</div>
-      </div>
-      <div class="mode-card" onclick="pickMode('Hiring Manager',this)">
-        <div class="mode-num">03</div><div class="mode-name">Hiring Manager</div>
-        <div class="mode-desc">Strategy, culture fit, decision logic, business alignment under pressure.</div>
-        <div class="mode-tag">HM round</div>
-      </div>
-      <div class="mode-card" onclick="pickMode('Deep Dive',this)">
-        <div class="mode-num">04</div><div class="mode-name">Deep Dive</div>
-        <div class="mode-desc">Portfolio pressure, brutal follow-ups, tradeoffs, cross-functional pushback.</div>
-        <div class="mode-tag">High pressure</div>
-      </div>
-      <div class="mode-card" onclick="pickMode('Weak Areas Only',this)">
-        <div class="mode-num">05</div><div class="mode-name">Weak Areas Only</div>
-        <div class="mode-desc">Targets your fail patterns. Rewires weak spots until they're automatic.</div>
-        <div class="mode-tag">Drill mode</div>
-      </div>
-      <div class="mode-card" onclick="pickMode('Custom Mode',this)">
-        <div class="mode-num">06</div><div class="mode-name">Custom Mode</div>
-        <div class="mode-desc">PM, engineer, and stakeholder personas. Scenarios and challenges.</div>
-        <div class="mode-tag">Flexible</div>
-      </div>
-    </div>
-  </div>
-  <div class="start-area">
-    <button class="start-btn" id="startBtn" onclick="launch()">Select a mode</button>
-    <div class="start-hint" id="startHint">Choose a mode above to begin</div>
-  </div>
+  <div class="header">
+    <div class="header-tag">Interview Trainer — Final</div>
+    <h1 class="header-title">Locked In — Torrance Green</h1>
+    <p class="header-sub">Thursday 3pm EST · Kimberly Previti · Mattress Firm</p>
+  </div>
+
+  <div class="mode-row" id="modeRow">
+    <button class="mode-btn active" onclick="setMode('all',this)">All Questions</button>
+    <button class="mode-btn" onclick="setMode('high',this)">High Priority</button>
+    <button class="mode-btn" onclick="setMode('new',this)">New Answers</button>
+    <button class="mode-btn" onclick="setMode('curve',this)">Curveballs</button>
+    <button class="mode-btn" onclick="setMode('missed',this)">Missed Only</button>
+  </div>
+
+  <div class="score-strip">
+    <div class="score-box"><div class="score-num" id="sc-total">0</div><div class="score-lab">total</div></div>
+    <div class="score-box"><div class="score-num good" id="sc-got">0</div><div class="score-lab">got it</div></div>
+    <div class="score-box"><div class="score-num bad" id="sc-miss">0</div><div class="score-lab">review</div></div>
+  </div>
+
+  <div class="progress-row">
+    <div class="progress-track"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+    <div class="progress-label" id="progLabel">0 / 0</div>
+  </div>
+
+  <div class="state-indicator">
+    <div class="state-dot active-q" id="dot1"></div>
+    <div class="state-dot" id="dot2"></div>
+    <div class="state-dot" id="dot3"></div>
+    <div class="state-label" id="stateLabel">Step 1 — Read the question</div>
+  </div>
+
+  <div class="instruction">
+    <strong>Step 1</strong> — Read it. <strong>Step 2</strong> — See the answer, study it. <strong>Step 3</strong> — Flip face down, say it out loud. <strong>Step 4</strong> — Flip back, grade yourself.
+  </div>
+
+  <div class="card-area" id="cardArea">
+    <div class="q-card" id="qCard">
+      <div class="q-card-type" id="cardType">QUESTION</div>
+      <div class="q-card-text" id="cardQ">Loading...</div>
+      <div class="q-card-hint" id="cardHint"></div>
+    </div>
+    <div class="a-card-wrap" id="aWrap">
+      <div class="a-card-inner" id="aInner">
+        <div class="a-face front" id="aFront">
+          <div class="a-face-type" id="aFaceType">Your Answer</div>
+          <div class="a-face-text" id="cardA">...</div>
+        </div>
+        <div class="a-face back">
+          <div class="back-icon">🧠</div>
+          <div class="back-text">Say it out loud.</div>
+          <div class="back-sub">When you're done, flip back<br>and grade yourself.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="btnArea">
+    <div id="state1Btns"><button class="btn-full btn-show" onclick="showAnswer()">Show Answer →</button></div>
+    <div id="state2Btns" style="display:none"><button class="btn-full btn-hide" onclick="testYourself()">🧠 Test Yourself — Flip Face Down</button></div>
+    <div id="state3Btns" style="display:none">
+      <p style="text-align:center;font-size:12px;color:var(--muted);margin-bottom:10px">Flip back to check, then grade:</p>
+      <button class="btn-full btn-show" style="margin-bottom:8px" onclick="revealBack()">Flip Back — Check Answer</button>
+      <div class="btn-grade-row" id="gradeRow" style="display:none">
+        <button class="btn-miss" onclick="rate(false)">✕ Need to review</button>
+        <button class="btn-got" onclick="rate(true)">✓ Got it</button>
+      </div>
+    </div>
+    <div id="state4Btns" style="display:none"><button class="btn-next" onclick="nextCard()">Next Question →</button></div>
+  </div>
+
+  <div class="results" id="results">
+    <div class="results-emoji" id="resEmoji">🔥</div>
+    <div class="results-title" id="resTitle">Done</div>
+    <div class="results-sub" id="resSub"></div>
+    <div class="results-grid">
+      <div class="result-card good"><div class="num" id="r-got">0</div><div class="lab">Got it</div></div>
+      <div class="result-card bad"><div class="num" id="r-miss">0</div><div class="lab">Need review</div></div>
+    </div>
+    <button class="btn-restart" onclick="restart()">Go Again</button>
+    <button class="btn-missed-only" onclick="reviewMissed()">Review Missed Only</button>
+  </div>
+
 </div>
-
-<div id="interviewScreen" class="screen">
-  <div class="sidebar">
-    <div class="sb-logo">UX<span>.</span>Engine</div>
-    <div class="mode-pill" id="modePill">—</div>
-    <div class="sb-sec" style="margin-top:16px;">
-      <div class="sb-sec-lbl">Score</div>
-      <div class="score-card">
-        <div class="score-main"><span class="score-num" id="scoreNum">—</span><span class="score-den">/10</span></div>
-        <div class="score-bar-bg"><div class="score-bar-fill" id="scoreBar"></div></div>
-      </div>
-      <div class="met-row"><span class="met-name">Clarity</span><span class="met-val" id="mClarity">—</span></div>
-      <div class="met-row"><span class="met-name">UX Thinking</span><span class="met-val" id="mUX">—</span></div>
-      <div class="met-row"><span class="met-name">Confidence</span><span class="met-val" id="mConf">—</span></div>
-    </div>
-    <div class="sb-sec" style="margin-top:16px;">
-      <div class="sb-sec-lbl">Hiring signals</div>
-      <div class="sig-list" id="sigList"><div class="sig-item" style="color:var(--text3);font-style:italic;">No signals yet</div></div>
-    </div>
-    <div class="q-ctr" id="qCtr">Question 0 of session</div>
-    <div class="sb-actions">
-      <button class="sb-btn" onclick="restartSess()">↩ Restart session</button>
-      <button class="sb-btn" onclick="goHome()">← Change mode</button>
-    </div>
-  </div>
-
-  <div class="chat-area">
-    <div class="chat-topbar">
-      <div class="iv-info">
-        <div class="iv-avatar" id="ivAv">AR</div>
-        <div><div class="iv-name" id="ivName">Alex Rivera</div><div class="iv-role" id="ivRole">Hiring Manager · UX Design Team</div></div>
-      </div>
-      <div class="topbar-right">
-        <span class="diff-badge medium" id="diffBadge">Medium</span>
-        <div class="live-dot-wrap"><div class="live-dot"></div><span>Live</span></div>
-      </div>
-    </div>
-    <div class="chat-msgs" id="chatMsgs"></div>
-    <div class="input-area">
-      <div class="input-wrap">
-        <textarea id="ansInput" class="ans-input" rows="2"
-          placeholder="Type your answer... aim for 30-60 seconds of speech"
-          onkeydown="onKey(event)" oninput="onInput(event)"></textarea>
-        <button class="send-btn" onclick="sendAnswer()" title="Send">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        </button>
-      </div>
-      <div class="input-meta">
-        <div class="timer" id="timer">0:00</div>
-        <div class="char-ct" id="charCt">0 chars</div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script>
-// ─── QUESTION BANK ───────────────────────────────────────────
-var QB = {
-  'Full Interview': [
-    "Tell me about yourself and why you're interested in this UX Designer role at Mattress Firm.",
-    "Walk me through a project you're most proud of. What problem were you solving?",
-    "What does your design process look like from discovery to delivery?",
-    "Why did you choose that specific design approach over alternatives?",
-    "How do you validate that your design actually solves the user's problem?",
-    "Tell me about a time you had to push back on a stakeholder's design request.",
-    "How do you collaborate with PMs and engineers day-to-day?",
-    "What's a weakness in your design practice and what are you doing about it?",
-    "A customer abandons the Mattress Firm checkout flow. Walk me through how you'd diagnose and fix it.",
-    "How do you prioritize which features or improvements to work on first?",
-    "What makes a truly good user experience — not just a usable one?",
-    "How would you approach designing for a customer who's never bought a mattress online before?",
-    "Your engineer says your design is too complex to build this sprint. What do you do?",
-    "What would you improve about Mattress Firm's current digital experience?",
-    "How do you balance user needs against business constraints?",
-    "Describe a design decision you made that you later changed based on feedback. What did you learn?"
-  ],
-  'Recruiter Screen': [
-    "Can you give me a quick overview of your background and what kind of UX work you do?",
-    "Why are you interested in Mattress Firm specifically?",
-    "Walk me through one project that best shows your UX skills.",
-    "How would you describe your design process in 60 seconds?",
-    "What does collaboration with product and engineering look like for you?",
-    "Have you worked in retail or e-commerce before? Tell me about that.",
-    "What tools do you use and what's your experience level with each?",
-    "What's one thing you're actively working on to grow as a designer?",
-    "What are you looking for in your next role?",
-    "Where do you see yourself in 2-3 years as a UX designer?"
-  ],
-  'Hiring Manager': [
-    "What's your design philosophy — how do you decide what's worth designing?",
-    "Tell me about a project where you had to make a hard design tradeoff.",
-    "How do you know when a design is done?",
-    "Walk me through how you'd redesign the Mattress Firm in-store pickup experience.",
-    "What's the biggest mistake you've made as a designer and what did it teach you?",
-    "How do you influence product direction when you don't have final say?",
-    "Describe your ideal working relationship with a product manager.",
-    "You're joining a team with no design system. What do you do in your first 90 days?",
-    "What does design leadership mean to you as an individual contributor?",
-    "How do you stay current with UX trends without chasing every shiny thing?",
-    "If a PM overrides your design recommendation, how do you respond?",
-    "What metrics do you use to measure the success of your UX work?"
-  ],
-  'Deep Dive': [
-    "Pick one project in your portfolio. Explain the problem at a user AND business level.",
-    "What were the 3 design directions you considered and why did you reject the other two?",
-    "What assumptions did you make in that design? How did you test them?",
-    "If you had twice the time on that project, what would you have done differently?",
-    "How would an engineer implement the most technically complex part of your design?",
-    "What would you measure to know if that design succeeded 6 months after launch?",
-    "Your design shipped and the key metric went the wrong direction. Walk me through your response.",
-    "A PM wants to add 3 features to your already-complex flow. How do you handle that conversation?",
-    "Design a feature that helps Mattress Firm customers choose between two similar mattresses online.",
-    "What's a UX pattern everyone uses that you think is actually bad design?",
-    "Your research says users want X, but analytics show they do Y. Which do you trust and why?",
-    "How do you design for users who are not tech-savvy?"
-  ],
-  'Weak Areas Only': [
-    "How do you validate that your design solves the actual user problem — not just the assumed one?",
-    "Walk me through your collaboration process with engineers during implementation.",
-    "Explain a design decision by starting with the user need, not the interface choice.",
-    "You did the research, built the prototype, got sign-off. What's your next step?",
-    "How do you handle it when stakeholder feedback contradicts your research findings?",
-    "Give me an example of a time your first design solution was wrong. How did you find out?",
-    "What business goal was your last project tied to and how did your design support it?",
-    "Describe your design using only the user's journey — no mention of UI elements.",
-    "What constraints did engineering give you and how did they shape your design decisions?",
-    "How do you prioritize user needs when they conflict with each other?"
-  ],
-  'Custom Mode': [
-    "I'm a PM. We have 2 weeks before launch and your design needs major revisions. How do we handle this?",
-    "I'm an engineer. Your design has animations that'll take 3 sprints. What do we cut?",
-    "Sell me on why you're better for this role than someone with twice your experience.",
-    "Walk me through a user research session you ran. What surprised you?",
-    "I'm a skeptical stakeholder. Why should we invest in UX research before building anything?",
-    "Design a feature that reduces returns for Mattress Firm. Think out loud.",
-    "Your design tested well with 5 users. The CEO hates it. What do you do?",
-    "How would you onboard a first-time mattress buyer vs. a repeat customer differently?",
-    "Pitch me a UX improvement for Mattress Firm's website in 60 seconds.",
-    "How do you design for both mobile users and in-store kiosk users simultaneously?"
-  ]
-};
+var ALL_CARDS=[
+  {type:"CORE NARRATIVE",priority:"high",tag:"core",curve:false,
+   q:"What is your core narrative as a designer?",
+   hint:"💡 Through-line behind everything you say. Know this cold.",
+   a:"My focus is <strong>helping users make better decisions by simplifying complex information</strong>. My experience working directly with Mattress Firm customers has given me real insight into how people evaluate choices — and I apply that understanding when designing digital experiences."},
+  {type:"ANSWER STRUCTURE",priority:"high",tag:"core",curve:false,
+   q:"What structure should every answer follow?",
+   hint:"💡 5 words. In order. Hit at least 3 every time.",
+   a:"<strong>User → Problem → Design Decision → Outcome → Iteration</strong><br><br>Lead with the user, not the tool. Every single answer."},
+  {type:"95% PROBABILITY",priority:"high",tag:"original",curve:false,
+   q:"Tell me about yourself.",
+   hint:"💡 Current role. What it taught you. Natural next step.",
+   a:"I currently work as a Sleep Expert at Mattress Firm where I help customers navigate complex product choices and make confident decisions. That role exposed me to <strong>how people evaluate information and compare options</strong>. Over time I realized the parts of the job I enjoy most — understanding how users think and organizing information so it becomes clearer — align closely with UX design. I began studying UX principles and building projects focused on simplifying complex workflows, so transitioning into this role felt like a natural next step."},
+  {type:"85% PROBABILITY",priority:"high",tag:"original",curve:false,
+   q:"What drew you to this role?",
+   hint:"💡 Internal candidate. You already know the customer.",
+   a:"What drew me to this role is the opportunity to apply UX thinking in a real product environment at a company where I <strong>already understand the customer</strong>. Working directly with Mattress Firm customers has given me insight into how people process information and make decisions — UX feels like a natural extension of that experience."},
+  {type:"95% PROBABILITY — LEAD WITH THIS",priority:"high",tag:"updated",curve:false,
+   q:"Walk me through a project.",
+   hint:"💡 MATTRESS FIRM FIRST. Not trading journal. Not home buying.",
+   a:"The most relevant project is the <strong>Mattress Firm Finder redesign</strong>. When I went through the experience myself, it was overwhelming — too many things competing for your attention before you even got to a recommendation. So I focused on simplifying the process — removing what wasn't necessary, making each step feel intentional, and making sure the end result actually reflected what the user told you. I designed the screens in Figma and built a working prototype."},
+  {type:"75% PROBABILITY",priority:"high",tag:"original",curve:false,
+   q:"Why did you choose that design approach?",
+   hint:"💡 Cognitive load. Visual hierarchy. Speed to clarity.",
+   a:"The core issue was that <strong>users had difficulty interpreting information quickly</strong>. So I focused on reducing cognitive load by organizing content visually and prioritizing the most important signals first. The goal was helping users understand patterns faster and make clearer decisions."},
+  {type:"80% PROBABILITY",priority:"high",tag:"original",curve:false,
+   q:"How do you approach a design problem?",
+   hint:"💡 User goal → friction → explore → iterate.",
+   a:"I start by <strong>understanding the user's goal</strong> and identifying where friction or confusion exists. From there I explore design approaches that could solve the problem and make the experience clearer. Then I iterate based on feedback and refine the workflow until it becomes intuitive."},
+  {type:"75% PROBABILITY",priority:"high",tag:"original",curve:false,
+   q:"What's your strength as a designer?",
+   hint:"💡 One phrase. Back it up in one sentence.",
+   a:"<strong>Simplifying complex information.</strong> I enjoy taking something that feels overwhelming and organizing it so users can understand and act on it more easily. That's a thread across everything in my portfolio."},
+  {type:"80% PROBABILITY — UPDATED",priority:"high",tag:"updated",curve:false,
+   q:"What are you still improving?",
+   hint:"💡 DO NOT say Figma. Say documentation and handoff.",
+   a:"My focus right now is <strong>tightening how I document design decisions for handoff</strong>. The thinking is there, but I want to make sure the reasoning behind each choice is as clear to an engineer reading the file as it is to me when I'm designing. Everything in my portfolio was self-taught, so I know how to close gaps quickly — this one is next."},
+  {type:"60% PROBABILITY",priority:"normal",tag:"original",curve:false,
+   q:"How do you handle feedback?",
+   hint:"💡 Short. Confident. You'd rather know early.",
+   a:"Feedback shows you what you missed. I'd rather know early than find out after it ships. If the feedback is valid, it improves the product — and <strong>that's always the goal</strong>."},
+  {type:"65% PROBABILITY",priority:"normal",tag:"original",curve:false,
+   q:"How do you validate your design?",
+   hint:"💡 Watch people use it. That's it.",
+   a:"<strong>You watch people use it.</strong> That's really it. When you observe someone completing a task, you can see exactly where they hesitate or get confused. That tells you more than any assumption you made during the design process."},
+  {type:"70% PROBABILITY",priority:"high",tag:"original",curve:false,
+   q:"Why should we choose you?",
+   hint:"💡 Internal. Floor experience. Self-taught. Day one contributor.",
+   a:"I already <strong>understand Mattress Firm customers</strong> and how they make decisions. Working on the floor has given me direct insight into real user behavior that most designers don't see firsthand. I've built a portfolio entirely through self-study, and I'm motivated to keep growing and contributing to the team from day one."},
+  {type:"85% PROBABILITY — NEW",priority:"high",tag:"new",curve:false,
+   q:"Tell me about a time you simplified something complex for a user.",
+   hint:"💡 Finder is your example. One question at a time. Guided not processed.",
+   a:"The <strong>Mattress Firm Finder</strong> was the clearest example I could point to. The current experience throws too much at the user before they've done anything. So the approach I took was one question at a time — understand what they need, build toward a recommendation based on that, and close with a result that actually reflects what they told you. The goal was to make them feel like <strong>the experience was built for them specifically</strong>."},
+  {type:"75% PROBABILITY — NEW",priority:"high",tag:"new",curve:false,
+   q:"How do you collaborate with developers and product managers?",
+   hint:"💡 Communication early. Document the why, not just the what.",
+   a:"It really comes down to <strong>communication early</strong>. I make sure the reasoning behind every design decision is documented — not just what it looks like, but why it's there. That way developers aren't left guessing and product managers can see how it connects to the goal. The earlier everyone's aligned, the cleaner the execution."},
+  {type:"70% PROBABILITY — NEW",priority:"high",tag:"new",curve:false,
+   q:"What do you know about how Mattress Firm customers make decisions?",
+   hint:"💡 They're on guard. Understand needs first. Decision follows naturally.",
+   a:"Most customers walk in <strong>already on guard</strong> — it's a big purchase and they're expecting to be sold to. So my job was never to justify the price. It was to understand their needs first. Sleep disruptors, what's causing them strain, what's keeping them up at night. Once I understood that, <strong>the right recommendation followed naturally</strong>. Everything connects — the decision gets easier when the experience is built around what they actually need."},
+  {type:"ASK THEM",priority:"normal",tag:"core",curve:false,
+   q:"What 3 questions do you ask Kimberly at the end?",
+   hint:"💡 Success at 6 months. How team collaborates. Biggest UX challenges.",
+   a:"1. <strong>What would success look like in this role after the first six months?</strong><br><br>2. <strong>How does the UX team collaborate with product managers and developers?</strong><br><br>3. <strong>What are the biggest UX challenges the team is currently focused on?</strong>"},
+  {type:"WHAT NOT TO DO",priority:"normal",tag:"core",curve:false,
+   q:"What are the 5 mistakes that kill candidates?",
+   hint:"💡 Tools. Visuals. Rambling. Defending. Context.",
+   a:"1. <strong>Talking about tools instead of thinking</strong><br>2. <strong>Describing visuals without explaining the problem</strong><br>3. <strong>Rambling without structure</strong><br>4. <strong>Defending designs instead of showing iteration</strong><br>5. <strong>Ignoring business context</strong>"},
+  {type:"6 SIGNALS",priority:"normal",tag:"core",curve:false,
+   q:"What 6 things is the interviewer listening for?",
+   hint:"💡 User. Reasoning. Iteration. Business. Engineering. Simplicity.",
+   a:"01 — <strong>User before the interface</strong><br>02 — Reasoning behind decisions<br>03 — Iteration mentioned naturally<br>04 — Business goals acknowledged<br>05 — Engineering feasibility considered<br>06 — <strong>Simplify complex information</strong>"},
 
-var PUSHBACKS = [
-  "Interesting. What would someone who disagrees with that approach say?",
-  "Good answer. Now defend that to a skeptical PM who wants the faster solution.",
-  "You mentioned iteration — what specifically changed between your first draft and the final design?",
-  "Strong. How would you apply that same thinking to a much larger, more complex product?",
-  "What was the hardest part of that — and did you almost make a different call?"
+  // ── CURVEBALLS ──
+  {type:"CURVEBALL",priority:"high",tag:"curve",curve:true,
+   q:"What's a design you've seen recently that you think is bad — and why?",
+   hint:"💡 You already have the perfect answer. Use the Finder.",
+   a:"The <strong>Mattress Firm Finder</strong>, honestly. Too many things competing for attention before the user gets to a recommendation. The experience interrupts instead of guides — and that gap between what it promises and what it actually delivers is what pushed me to redesign it."},
+  {type:"CURVEBALL",priority:"high",tag:"curve",curve:true,
+   q:"Tell me about a time a design you made failed or didn't work.",
+   hint:"💡 Self-awareness question. Use the trading journal early version.",
+   a:"Early in the trading journal, I focused too much on how much data to show instead of how users would actually process it after a trade. The first version had too many metrics. I caught it through personal use — nothing was landing clearly — so I <strong>rebuilt the dashboard around pattern recognition instead of raw numbers</strong>. That iteration made the whole thing cleaner."},
+  {type:"CURVEBALL",priority:"high",tag:"curve",curve:true,
+   q:"Where do you see yourself in 3 to 5 years?",
+   hint:"💡 Show you're serious about the field — not just the pay bump.",
+   a:"Growing in this field. I want to be the kind of designer who can lead a project from research all the way through to a shipped product — and eventually <strong>mentor other designers the way I've had to mentor myself</strong>. This role is the foundation of that."},
+  {type:"CURVEBALL — MOST IMPORTANT",priority:"high",tag:"curve",curve:true,
+   q:"You don't have formal UX experience — why should we take a chance on you?",
+   hint:"💡 Say this calm and flat. Not defensive. It's a fact, not an argument.",
+   a:"Everything in my portfolio was built without a classroom or a team. I identified real problems, designed solutions, built working prototypes, and documented my process — all self-taught. Most people with formal experience have <strong>never designed for the exact product they're interviewing for</strong>. I have. That's not a gap — that's an advantage."}
 ];
 
-var REWRITES = [
-  "The user I was designing for needed to accomplish [goal] but kept hitting friction around [specific pain]. I chose [approach] because of [user + business reason]. We tested it with [users/data] and saw [outcome]. If I did it again, I'd [honest reflection].",
-  "Starting from the user — they were trying to [goal] and the existing flow made that difficult because [problem]. My design decision was [specific choice] because [reasoning tied to need]. I validated it by [method] and the result was [outcome].",
-  "The real problem wasn't the UI — users didn't have enough information to make a confident decision at [point in journey]. I redesigned [element] to [simplify/clarify]. Engineering flagged [constraint] so we adapted by [solution]. Post-launch, [metric] improved."
-];
+var deck=[],current=0,got=0,missed=0,missedCards=[],currentMode='all',cardState=1;
 
-var PERSONAS = {
-  'Full Interview':   {name:'Alex Rivera',  role:'Hiring Manager · UX Design Team',       av:'AR'},
-  'Recruiter Screen': {name:'Jordan Lee',   role:'Recruiter · Mattress Firm',              av:'JL'},
-  'Hiring Manager':   {name:'Sam Chen',     role:'Director of UX · Mattress Firm',         av:'SC'},
-  'Deep Dive':        {name:'Morgan Walsh', role:'Principal PM · Cross-functional Panel',  av:'MW'},
-  'Weak Areas Only':  {name:'Alex Rivera',  role:'Hiring Manager · Drill Session',         av:'AR'},
-  'Custom Mode':      {name:'Taylor Kim',   role:'Lead UX Engineer · Technical Panel',     av:'TK'}
-};
-
-// ─── STATE ───────────────────────────────────────────────────
-var S = {
-  mode:'', qIdx:0, score:null, weakBucket:[], asked:0,
-  metrics:{clarity:null,ux:null,conf:null},
-  hire:[], risk:[], diff:'medium',
-  timerSec:0, timerInt:null, waiting:false,
-  questions:[], consecutive:0
-};
-
-// ─── HOME ─────────────────────────────────────────────────────
-var chosenMode = null;
-function pickMode(m, el) {
-  document.querySelectorAll('.mode-card').forEach(function(c){c.classList.remove('sel');});
-  el.classList.add('sel');
-  chosenMode = m;
-  var btn = document.getElementById('startBtn');
-  btn.textContent = 'Start → ' + m;
-  btn.classList.add('ready');
-  document.getElementById('startHint').textContent = 'Ready when you are.';
+function setMode(mode,btn){
+  currentMode=mode;
+  document.querySelectorAll('.mode-btn').forEach(function(b){b.classList.remove('active')});
+  btn.classList.add('active');
+  got=0;missed=0;current=0;
+  buildDeck(mode);
+  updateScores();
+  document.getElementById('results').style.display='none';
+  document.getElementById('cardArea').style.display='block';
+  showCard();
 }
-
-function launch() {
-  if (!chosenMode) return;
-  S.mode = chosenMode;
-  S.qIdx = 0; S.score = null; S.weakBucket = []; S.asked = 0;
-  S.hire = []; S.risk = []; S.diff = 'medium'; S.consecutive = 0;
-  S.metrics = {clarity:null,ux:null,conf:null};
-  S.questions = shuffle((QB[chosenMode] || QB['Full Interview']).slice());
-
-  var p = PERSONAS[chosenMode] || PERSONAS['Full Interview'];
-  document.getElementById('ivAv').textContent = p.av;
-  document.getElementById('ivName').textContent = p.name;
-  document.getElementById('ivRole').textContent = p.role;
-  document.getElementById('modePill').textContent = chosenMode;
-
-  document.getElementById('homeScreen').classList.remove('active');
-  document.getElementById('interviewScreen').classList.add('active');
-  document.getElementById('chatMsgs').innerHTML = '';
-  resetSidebar();
-
-  setTimeout(function(){ askNext(true); }, 400);
+function buildDeck(mode){
+  var base=ALL_CARDS.slice();
+  if(mode==='high') base=ALL_CARDS.filter(function(c){return c.priority==='high'&&!c.curve});
+  else if(mode==='new') base=ALL_CARDS.filter(function(c){return c.tag==='new'||c.tag==='updated'});
+  else if(mode==='curve') base=ALL_CARDS.filter(function(c){return c.curve===true});
+  else if(mode==='missed') base=missedCards.length>0?missedCards.slice():ALL_CARDS.slice();
+  deck=shuffle(base);
 }
+function shuffle(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=arr[i];arr[i]=arr[j];arr[j]=t;}return arr;}
+function init(){buildDeck('all');got=0;missed=0;current=0;missedCards=[];updateScores();document.getElementById('results').style.display='none';document.getElementById('cardArea').style.display='block';showCard();}
 
-function goHome() {
-  document.getElementById('interviewScreen').classList.remove('active');
-  document.getElementById('homeScreen').classList.add('active');
-  stopTimer();
+function showCard(){
+  if(current>=deck.length){showResults();return;}
+  var c=deck[current];
+  cardState=1;
+  document.getElementById('aWrap').classList.remove('flipped');
+  document.getElementById('cardType').textContent=c.type;
+  document.getElementById('cardType').className=c.curve?'q-card-type curve':'q-card-type';
+  document.getElementById('cardQ').textContent=c.q;
+  document.getElementById('cardHint').textContent=c.hint||'';
+  document.getElementById('cardA').innerHTML=c.a;
+  document.getElementById('qCard').className=c.curve?'q-card curveball':'q-card';
+  document.getElementById('aFront').className=c.curve?'a-face front curve':'a-face front';
+  document.getElementById('aFaceType').className=c.curve?'a-face-type curve':'a-face-type';
+  document.getElementById('cardA').className=c.curve?'a-face-text curve':'a-face-text';
+  document.getElementById('gradeRow').style.display='none';
+  setState(1);
+  updateProgress();
 }
-
-function restartSess() {
-  S.qIdx=0; S.score=null; S.weakBucket=[]; S.asked=0;
-  S.hire=[]; S.risk=[]; S.diff='medium'; S.consecutive=0;
-  S.metrics={clarity:null,ux:null,conf:null};
-  S.questions = shuffle((QB[S.mode]||QB['Full Interview']).slice());
-  document.getElementById('chatMsgs').innerHTML='';
-  resetSidebar();
-  setTimeout(function(){ askNext(true); }, 300);
+function setState(s){
+  cardState=s;
+  ['state1Btns','state2Btns','state3Btns','state4Btns'].forEach(function(id){document.getElementById(id).style.display='none'});
+  var d1=document.getElementById('dot1'),d2=document.getElementById('dot2'),d3=document.getElementById('dot3'),lbl=document.getElementById('stateLabel');
+  d1.className='state-dot';d2.className='state-dot';d3.className='state-dot';
+  if(s===1){document.getElementById('state1Btns').style.display='block';d1.className='state-dot active-q';lbl.textContent='Step 1 — Read the question';}
+  else if(s===2){document.getElementById('state2Btns').style.display='block';d1.className='state-dot active-q';d2.className='state-dot active-a';lbl.textContent='Step 2 — Study the answer';}
+  else if(s===3){document.getElementById('state3Btns').style.display='block';d1.className='state-dot active-q';d2.className='state-dot active-a';d3.className='state-dot active-t';lbl.textContent='Step 3 — Say it out loud';}
+  else if(s===4){document.getElementById('state4Btns').style.display='block';d1.className='state-dot active-q';d2.className='state-dot active-a';d3.className='state-dot active-t';lbl.textContent='Step 4 — Graded ✓';}
 }
-
-// ─── QUESTION ENGINE ──────────────────────────────────────────
-function askNext(isFirst) {
-  var q;
-  if (!isFirst && S.weakBucket.length > 0 && Math.random() < 0.45) {
-    q = S.weakBucket.shift();
-    q = 'Coming back to this — ' + q;
-  } else {
-    q = S.questions[S.qIdx % S.questions.length];
-    S.qIdx++;
-  }
-
-  var prefix = '';
-  if (isFirst) {
-    prefix = rnd(["Let's get started.", "Alright, first question.", "Thanks for coming in —", "Let's dive right in."]);
-  } else if (S.diff === 'hard') {
-    prefix = rnd(PUSHBACKS);
-  }
-
-  var fullQ = prefix ? prefix + ' ' + q : q;
-  S.asked++;
-  updateQCtr();
-  typeMsg(fullQ);
+function showAnswer(){document.getElementById('aWrap').classList.remove('flipped');setState(2);}
+function testYourself(){document.getElementById('aWrap').classList.add('flipped');setState(3);}
+function revealBack(){document.getElementById('aWrap').classList.remove('flipped');document.getElementById('gradeRow').style.display='grid';}
+function rate(wasGood){
+  if(wasGood){got++;}
+  else{missed++;var c=deck[current];if(!missedCards.find(function(m){return m.q===c.q}))missedCards.push(c);}
+  updateScores();setState(4);
 }
-
-// ─── EVALUATION ENGINE ────────────────────────────────────────
-function evaluate(answer) {
-  var lower = answer.toLowerCase();
-  var words = answer.trim().split(/\s+/);
-  var wc = words.length;
-  var score = 5;
-  var hires = [], risks = [];
-
-  // Length
-  if (wc < 20) { score -= 2; risks.push('Answer too short'); }
-  else if (wc > 280) { score -= 1; risks.push('Answer too long / rambling'); }
-  else if (wc >= 55 && wc <= 170) score += 1;
-
-  // User first (appears in first 25% of answer)
-  var userWords = ['user','customer','people','person','they ','their','someone','shopper','buyer'];
-  var firstQuarter = lower.slice(0, Math.floor(lower.length * 0.3));
-  if (userWords.some(function(w){return firstQuarter.indexOf(w)>-1;})) {
-    score += 1.5; hires.push('Talked about user first');
-  } else {
-    score -= 0.5; risks.push("Didn't lead with user need");
-  }
-
-  // Decision logic
-  if (['because','decided','chose','reason','since','so that','in order','due to','therefore'].some(function(w){return lower.indexOf(w)>-1;})) {
-    score += 1; hires.push('Explained decision reasoning');
-  } else {
-    risks.push('No decision logic — WHY is missing');
-  }
-
-  // Iteration
-  if (['iterat','test','learn','feedback','improv','update','revis','pivot','changed','v2','version','refin'].some(function(w){return lower.indexOf(w)>-1;})) {
-    score += 1; hires.push('Mentioned iteration');
-  } else {
-    risks.push('No iteration mentioned');
-  }
-
-  // Business context
-  if (['business','revenue','conversion','retention','metric','kpi','goal','objective','growth','cost','impact'].some(function(w){return lower.indexOf(w)>-1;})) {
-    score += 0.5; hires.push('Acknowledged business goals');
-  }
-
-  // Validation
-  if (['test','validat','research','usability','prototype','data','analytic','survey','interview','measure'].some(function(w){return lower.indexOf(w)>-1;})) {
-    score += 1; hires.push('Mentioned validation/testing');
-  } else {
-    risks.push('No validation or testing mentioned');
-  }
-
-  // Collaboration
-  if (['engineer','developer',' pm ','product','stakeholder','team','collaborat','partner','manager','cross'].some(function(w){return lower.indexOf(w)>-1;})) {
-    score += 0.5; hires.push('Mentioned collaboration');
-  }
-
-  // Tool-only trap
-  var toolHits = ['figma','sketch','adobe','invision','zeplin','framer'].filter(function(w){return lower.indexOf(w)>-1;}).length;
-  if (toolHits >= 2 && lower.indexOf('because') === -1 && !userWords.some(function(w){return lower.indexOf(w)>-1;})) {
-    score -= 1.5; risks.push('Led with tools, not thinking');
-  }
-
-  // Simplification signal (Mattress Firm narrative)
-  if (['simplif','clarif','clear','easy','confident','decision','confus','overwhelm','compar'].some(function(w){return lower.indexOf(w)>-1;})) {
-    score += 0.5; hires.push('Simplified complex info');
-  }
-
-  score = Math.max(1, Math.min(10, Math.round(score)));
-
-  var clarity = score >= 7 ? 'Strong' : score >= 5 ? 'Good' : 'Weak';
-  var ux = hires.length >= 3 ? 'Strong' : hires.length >= 1 ? 'Good' : 'Weak';
-  var conf = (wc >= 55 && wc <= 200) ? 'Strong' : wc < 25 ? 'Weak' : 'Good';
-
-  return {score:score, hires:hires, risks:risks, clarity:clarity, ux:ux, conf:conf};
+function nextCard(){current++;showCard();}
+function updateScores(){
+  document.getElementById('sc-total').textContent=deck.length;
+  document.getElementById('sc-got').textContent=got;
+  document.getElementById('sc-miss').textContent=missed;
+  document.getElementById('r-got').textContent=got;
+  document.getElementById('r-miss').textContent=missed;
 }
-
-function buildFeedback(ev) {
-  var score = ev.score;
-  var html = '';
-  var bucket = score >= 8 ? 'strong' : score < 5 ? 'weak' : 'mid';
-
-  var heads = {
-    strong: ["Strong answer.","That passes.","Good UX thinking.","Hire signal.","That's the right frame."],
-    mid:    ["Getting there.","Decent, needs more.","Partial credit.","Almost — not quite there."],
-    weak:   ["That wouldn't pass.","Not passing.","Red flag.","Too vague.","Talking about tools, not thinking."]
-  };
-
-  var notes = {
-    strong: [
-      "You led with the user need before the solution — exactly right.",
-      "Clear decision logic and you mentioned iteration naturally.",
-      "You acknowledged business context without losing the user lens.",
-      "You explained the WHY behind your decision, not just what you did.",
-      "Specific, structured, and user-centered. That's what they want to hear."
-    ],
-    mid: [
-      "The thinking is right but you buried the user need. Lead with it next time.",
-      "You explained what you did but not WHY you did it. Add your decision logic.",
-      "Good structure but no mention of validation or testing. Always close the loop.",
-      "You mentioned the outcome but skipped the iteration. Show that you learn from feedback."
-    ],
-    weak: [
-      "You described the UI instead of the problem. Restart from the user's goal.",
-      "No validation mentioned. Every design answer needs a testing component.",
-      "You described what you did — not why. Interviewers want the decision logic.",
-      "This won't differentiate you. Get specific: user, problem, decision, outcome.",
-      "Tool names are not UX answers. The thinking behind the design is the answer."
-    ]
-  };
-
-  var rules = {
-    mid: ["Lead with user, not UI.", "State WHY before stating WHAT.", "Designs aren't done until tested.", "Show the loop: test → learn → improve."],
-    weak: ["User goal first, interface second.", "Never skip validation.", "Decision logic = WHY, not WHAT.", "Specificity is credibility.", "Tools are irrelevant. Thinking is everything."]
-  };
-
-  html += '<div class="fb-head ' + bucket + '">' + rnd(heads[bucket]) + '</div>';
-  html += '<div style="font-size:13px;color:var(--text2);margin-bottom:8px;">' + rnd(notes[bucket]) + '</div>';
-
-  if (bucket === 'weak') {
-    html += '<div class="fb-rewrite">' + rnd(REWRITES) + '</div>';
-    html += '<div class="pattern-rule">Rule: ' + rnd(rules.weak) + '</div>';
-  } else if (bucket === 'mid') {
-    html += '<div class="pattern-rule">Rule: ' + rnd(rules.mid) + '</div>';
-  }
-
-  if (ev.hires.length || ev.risks.length) {
-    html += '<div class="sig-chips">';
-    ev.hires.slice(0,3).forEach(function(s){ html += '<span class="sig-chip hire">✓ ' + s + '</span>'; });
-    ev.risks.slice(0,2).forEach(function(s){ html += '<span class="sig-chip risk">✗ ' + s + '</span>'; });
-    html += '</div>';
-  }
-
-  return {html:html, bucket:bucket};
+function updateProgress(){
+  var pct=deck.length>0?(current/deck.length*100):0;
+  document.getElementById('progFill').style.width=pct+'%';
+  document.getElementById('progLabel').textContent=current+' / '+deck.length;
 }
-
-// ─── SEND / RECEIVE ───────────────────────────────────────────
-function sendAnswer() {
-  var input = document.getElementById('ansInput');
-  var answer = input.value.trim();
-  if (!answer || S.waiting) return;
-  S.waiting = true;
-  stopTimer();
-  input.value = '';
-  input.style.height = '';
-  document.getElementById('charCt').textContent = '0 chars';
-  document.getElementById('timer').textContent = '0:00';
-  document.getElementById('timer').className = 'timer';
-
-  addMsg('user', '', answer);
-  showTyping();
-
-  setTimeout(function() {
-    hideTyping();
-    var ev = evaluate(answer);
-
-    // Rolling average score
-    S.score = S.score === null ? ev.score : Math.round((S.score + ev.score) / 2);
-    S.metrics.clarity = ev.clarity;
-    S.metrics.ux = ev.ux;
-    S.metrics.conf = ev.conf;
-
-    // Accumulate signals
-    ev.hires.forEach(function(h){ if (S.hire.indexOf(h) === -1) S.hire.push(h); });
-    ev.risks.forEach(function(r){ if (S.risk.indexOf(r) === -1) S.risk.push(r); });
-    if (S.hire.length > 5) S.hire = S.hire.slice(-5);
-    if (S.risk.length > 4) S.risk = S.risk.slice(-4);
-
-    // Adaptive difficulty
-    if (ev.score >= 8) {
-      S.consecutive = Math.max(0, S.consecutive) + 1;
-      if (S.consecutive >= 2) S.diff = 'hard';
-    } else if (ev.score < 5) {
-      S.consecutive = Math.min(0, S.consecutive) - 1;
-      if (S.consecutive <= -2) S.diff = 'easy';
-      var lastQ = S.questions[(S.qIdx - 1 + S.questions.length) % S.questions.length];
-      if (lastQ && S.weakBucket.indexOf(lastQ) === -1) S.weakBucket.push(lastQ);
-    } else {
-      S.consecutive = 0;
-      if (S.diff !== 'hard') S.diff = 'medium';
-    }
-
-    var db = document.getElementById('diffBadge');
-    db.className = 'diff-badge ' + S.diff;
-    db.textContent = S.diff.charAt(0).toUpperCase() + S.diff.slice(1);
-
-    updateSidebar();
-
-    var fb = buildFeedback(ev);
-    addMsg('fb', fb.bucket, fb.html);
-
-    if (S.asked % 4 === 0 && S.asked > 0) {
-      setTimeout(addScoreUpdate, 500);
-    }
-
-    var delay = ev.score < 5 ? 2400 : 1400;
-    setTimeout(function(){
-      askNext(false);
-      S.waiting = false;
-    }, delay);
-
-  }, 700 + Math.random() * 700);
+function showResults(){
+  document.getElementById('cardArea').style.display='none';
+  ['state1Btns','state2Btns','state3Btns','state4Btns'].forEach(function(id){document.getElementById(id).style.display='none'});
+  var pct=deck.length>0?Math.round(got/deck.length*100):0;
+  var emoji,title,sub;
+  if(pct>=90){emoji='🔥';title='That\'s elite.';sub='90%+ without looking. You know this cold. Thursday is yours.';}
+  else if(pct>=70){emoji='💪';title='Strong run.';sub='You know the core. Run Missed Only once more and those gaps close fast.';}
+  else if(pct>=50){emoji='📋';title='Getting there.';sub='Second pass always lands better. Focus on the curveballs.';}
+  else{emoji='🎯';title='Keep going.';sub='Every card you missed is in Missed Only. Run that until they stick.';}
+  document.getElementById('resEmoji').textContent=emoji;
+  document.getElementById('resTitle').textContent=title;
+  document.getElementById('resSub').textContent=sub;
+  document.getElementById('results').style.display='block';
+  updateScores();
 }
-
-// ─── DOM HELPERS ──────────────────────────────────────────────
-function addMsg(type, sub, content) {
-  var msgs = document.getElementById('chatMsgs');
-  var d = document.createElement('div');
-  d.className = 'msg ' + type + (sub ? ' ' + sub : '');
-  if (type === 'user') {
-    d.innerHTML = '<div class="msg-lbl">You</div><div class="bubble">' + esc(content) + '</div>';
-  } else if (type === 'sys') {
-    d.innerHTML = '<div class="msg-lbl">Interviewer</div><div class="bubble">' + esc(content) + '</div>';
-  } else {
-    d.innerHTML = '<div class="msg-lbl">Feedback</div><div class="bubble">' + content + '</div>';
-  }
-  msgs.appendChild(d);
-  scrollBottom();
-}
-
-function typeMsg(text) {
-  showTyping();
-  var delay = 600 + Math.min(text.length * 7, 1200);
-  setTimeout(function(){
-    hideTyping();
-    addMsg('sys', '', text);
-    startTimer();
-  }, delay);
-}
-
-function showTyping() {
-  var msgs = document.getElementById('chatMsgs');
-  var d = document.createElement('div');
-  d.className = 'msg sys'; d.id = 'typingEl';
-  d.innerHTML = '<div class="msg-lbl">Interviewer</div><div class="typing-wrap"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div>';
-  msgs.appendChild(d); scrollBottom();
-}
-function hideTyping() { var el=document.getElementById('typingEl'); if(el) el.remove(); }
-
-function addScoreUpdate() {
-  var msgs = document.getElementById('chatMsgs');
-  var d = document.createElement('div');
-  d.className = 'score-update';
-  var s = S.score || '—';
-  d.innerHTML =
-    '<div class="su-title">— Score Update · Q' + S.asked + ' —</div>' +
-    '<div class="su-grid">' +
-    '<div class="su-item"><span>Overall</span><span style="color:var(--accent)">' + s + '/10</span></div>' +
-    '<div class="su-item"><span>Clarity</span><span style="color:' + mc(S.metrics.clarity) + '">' + (S.metrics.clarity||'—') + '</span></div>' +
-    '<div class="su-item"><span>UX Thinking</span><span style="color:' + mc(S.metrics.ux) + '">' + (S.metrics.ux||'—') + '</span></div>' +
-    '<div class="su-item"><span>Confidence</span><span style="color:' + mc(S.metrics.conf) + '">' + (S.metrics.conf||'—') + '</span></div>' +
-    '</div>';
-  msgs.appendChild(d); scrollBottom();
-}
-
-function updateSidebar() {
-  if (S.score !== null) {
-    document.getElementById('scoreNum').textContent = S.score;
-    document.getElementById('scoreBar').style.width = (S.score*10) + '%';
-  }
-  setMet('mClarity', S.metrics.clarity);
-  setMet('mUX', S.metrics.ux);
-  setMet('mConf', S.metrics.conf);
-
-  var sl = document.getElementById('sigList');
-  sl.innerHTML = '';
-  S.hire.slice(-4).forEach(function(s){ sl.innerHTML += '<div class="sig-item"><div class="sig-dot hire"></div>' + s + '</div>'; });
-  S.risk.slice(-3).forEach(function(s){ sl.innerHTML += '<div class="sig-item"><div class="sig-dot risk"></div>' + s + '</div>'; });
-  if (!sl.innerHTML) sl.innerHTML = '<div class="sig-item" style="color:var(--text3);font-style:italic;">No signals yet</div>';
-}
-
-function resetSidebar() {
-  document.getElementById('scoreNum').textContent = '—';
-  document.getElementById('scoreBar').style.width = '0%';
-  ['mClarity','mUX','mConf'].forEach(function(id){
-    var el = document.getElementById(id); el.textContent='—'; el.className='met-val';
-  });
-  document.getElementById('sigList').innerHTML = '<div class="sig-item" style="color:var(--text3);font-style:italic;">No signals yet</div>';
-  updateQCtr();
-}
-
-function setMet(id, val) {
-  var el = document.getElementById(id);
-  el.textContent = val || '—';
-  el.className = 'met-val ' + (val==='Strong'?'good':val==='Weak'?'bad':val==='Good'?'mid':'');
-}
-
-function updateQCtr(){ document.getElementById('qCtr').textContent = 'Question ' + S.asked + ' of session'; }
-function mc(v){ return v==='Strong'?'var(--success)':v==='Weak'?'var(--danger)':'var(--warning)'; }
-function scrollBottom(){ var m=document.getElementById('chatMsgs'); setTimeout(function(){ m.scrollTop=m.scrollHeight; },50); }
-function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
-function rnd(a){ return a[Math.floor(Math.random()*a.length)]; }
-function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
-
-// ─── TIMER ───────────────────────────────────────────────────
-function startTimer() {
-  stopTimer();
-  S.timerSec = 0;
-  S.timerInt = setInterval(function(){
-    S.timerSec++;
-    var m = Math.floor(S.timerSec/60), s = S.timerSec%60;
-    var el = document.getElementById('timer');
-    el.textContent = m + ':' + (s < 10 ? '0' : '') + s;
-    el.className = 'timer' + (S.timerSec>90?' over':S.timerSec>60?' warn':'');
-  }, 1000);
-}
-function stopTimer(){ if(S.timerInt){ clearInterval(S.timerInt); S.timerInt=null; } }
-
-// ─── INPUT ───────────────────────────────────────────────────
-function onKey(e){
-  if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendAnswer(); return; }
-  var t=e.target; t.style.height='auto'; t.style.height=Math.min(t.scrollHeight,140)+'px';
-}
-function onInput(e){
-  document.getElementById('charCt').textContent = e.target.value.length + ' chars';
-  var t=e.target; t.style.height='auto'; t.style.height=Math.min(t.scrollHeight,140)+'px';
-}
+function restart(){got=0;missed=0;current=0;buildDeck(currentMode);updateScores();document.getElementById('results').style.display='none';document.getElementById('cardArea').style.display='block';showCard();}
+function reviewMissed(){if(missedCards.length===0){alert('No missed cards yet. Run the full deck first.');return;}currentMode='missed';got=0;missed=0;current=0;deck=shuffle(missedCards.slice());updateScores();document.getElementById('results').style.display='none';document.getElementById('cardArea').style.display='block';showCard();}
+init();
 </script>
 </body>
 </html>
