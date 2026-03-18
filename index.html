@@ -82,6 +82,13 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);min-height:
 .result-card.bad .num{color:var(--red)}
 .btn-restart{background:var(--red);color:#fff;border:none;border-radius:50px;padding:14px 28px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-right:8px;margin-bottom:8px}
 .btn-missed-only{background:var(--white);color:var(--dark);border:1.5px solid var(--border);border-radius:50px;padding:14px 28px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:8px}
+.a-face-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.a-face-header .a-face-type{margin-bottom:0}
+.speak-btn{display:flex;align-items:center;gap:5px;background:rgba(22,163,74,0.12);border:1px solid rgba(22,163,74,0.3);border-radius:50px;padding:5px 13px;font-size:11px;font-weight:700;color:var(--green);cursor:pointer;font-family:inherit;transition:all 0.15s;flex-shrink:0}
+.speak-btn:hover{background:rgba(22,163,74,0.22)}
+.speak-btn.speaking{background:rgba(200,16,46,0.1);border-color:rgba(200,16,46,0.3);color:var(--red)}
+.speak-btn.curve-s{background:rgba(180,83,9,0.12);border-color:rgba(180,83,9,0.3);color:var(--amber)}
+.speak-btn.curve-s.speaking{background:rgba(200,16,46,0.1);border-color:rgba(200,16,46,0.3);color:var(--red)}
 </style>
 </head>
 <body>
@@ -132,7 +139,13 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);min-height:
     <div class="a-card-wrap" id="aWrap">
       <div class="a-card-inner" id="aInner">
         <div class="a-face front" id="aFront">
-          <div class="a-face-type" id="aFaceType">Your Answer</div>
+          <div class="a-face-header">
+            <div class="a-face-type" id="aFaceType">Your Answer</div>
+            <button class="speak-btn" id="speakBtn" onclick="speakAnswer()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+              Listen
+            </button>
+          </div>
           <div class="a-face-text" id="cardA">...</div>
         </div>
         <div class="a-face back">
@@ -183,8 +196,8 @@ var ALL_CARDS=[
    a:"<strong>User → Problem → Design Decision → Outcome → Iteration</strong><br><br>Lead with the user, not the tool. Every single answer."},
   {type:"95% PROBABILITY",priority:"high",tag:"original",curve:false,
    q:"Tell me about yourself.",
-   hint:"💡 Current role. What it taught you. Natural next step.",
-   a:"I currently work as a Sleep Expert at Mattress Firm where I help customers navigate complex product choices and make confident decisions. That role exposed me to <strong>how people evaluate information and compare options</strong>. Over time I realized the parts of the job I enjoy most — understanding how users think and organizing information so it becomes clearer — align closely with UX design. I began studying UX principles and building projects focused on simplifying complex workflows, so transitioning into this role felt like a natural next step."},
+   hint:"💡 Current role. UX background is 3-4 years. Not new. Natural next step.",
+   a:"I'm currently a Sleep Expert at Mattress Firm. My job is to guide customers through the floor without overwhelming them — understanding their needs and helping them get to the right decision without confusion. But <strong>UX is something I've been building toward for about 3 to 4 years now</strong>. It started with web design, then evolved into UX — PDF guides, product concepts, information design. Over time I realized the work I was already doing and the work I enjoy most were pointing in the same direction. <strong>This role is the natural next step.</strong>"},
   {type:"85% PROBABILITY",priority:"high",tag:"original",curve:false,
    q:"What drew you to this role?",
    hint:"💡 Internal candidate. You already know the customer.",
@@ -303,6 +316,10 @@ function showCard(){
   document.getElementById('aFront').className=c.curve?'a-face front curve':'a-face front';
   document.getElementById('aFaceType').className=c.curve?'a-face-type curve':'a-face-type';
   document.getElementById('cardA').className=c.curve?'a-face-text curve':'a-face-text';
+  // update speak button style + reset
+  stopSpeech();
+  var sb=document.getElementById('speakBtn');
+  if(sb){sb.className=c.curve?'speak-btn curve-s':'speak-btn';}
   document.getElementById('gradeRow').style.display='none';
   setState(1);
   updateProgress();
@@ -355,6 +372,81 @@ function showResults(){
 }
 function restart(){got=0;missed=0;current=0;buildDeck(currentMode);updateScores();document.getElementById('results').style.display='none';document.getElementById('cardArea').style.display='block';showCard();}
 function reviewMissed(){if(missedCards.length===0){alert('No missed cards yet. Run the full deck first.');return;}currentMode='missed';got=0;missed=0;current=0;deck=shuffle(missedCards.slice());updateScores();document.getElementById('results').style.display='none';document.getElementById('cardArea').style.display='block';showCard();}
+// ── TEXT TO SPEECH ─────────────────────────────────────────
+var ttsActive=false;
+function getBestVoice(){
+  var voices=window.speechSynthesis.getVoices();
+  // Priority: soft female voices by name
+  var preferred=['Samantha','Karen','Moira','Fiona','Tessa','Victoria','Allison','Ava','Susan','Zira','Hazel','Female','Google UK English Female','Google US English'];
+  for(var i=0;i<preferred.length;i++){
+    for(var j=0;j<voices.length;j++){
+      if(voices[j].name.indexOf(preferred[i])!==-1) return voices[j];
+    }
+  }
+  // Fallback: any female-sounding or English voice
+  for(var k=0;k<voices.length;k++){
+    if(voices[k].lang.indexOf('en')===0) return voices[k];
+  }
+  return voices[0]||null;
+}
+function stripHTML(html){
+  var tmp=document.createElement('div');
+  tmp.innerHTML=html;
+  return tmp.textContent||tmp.innerText||'';
+}
+function speakAnswer(){
+  var btn=document.getElementById('speakBtn');
+  if(ttsActive){
+    window.speechSynthesis.cancel();
+    ttsActive=false;
+    btn.classList.remove('speaking');
+    btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg> Listen';
+    return;
+  }
+  var text=stripHTML(document.getElementById('cardA').innerHTML);
+  if(!text) return;
+  window.speechSynthesis.cancel();
+  var utt=new SpeechSynthesisUtterance(text);
+  // Wait for voices to load if needed
+  var voice=getBestVoice();
+  if(!voice&&window.speechSynthesis.getVoices().length===0){
+    window.speechSynthesis.onvoiceschanged=function(){
+      voice=getBestVoice();
+      if(voice) utt.voice=voice;
+      doSpeak(utt,btn);
+    };
+    return;
+  }
+  if(voice) utt.voice=voice;
+  doSpeak(utt,btn);
+}
+function doSpeak(utt,btn){
+  utt.rate=0.88;   // slightly slower — natural pace
+  utt.pitch=1.05;  // slightly higher — softer female tone
+  utt.volume=1;
+  ttsActive=true;
+  btn.classList.add('speaking');
+  btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Stop';
+  utt.onend=function(){
+    ttsActive=false;
+    btn.classList.remove('speaking');
+    btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg> Listen';
+  };
+  utt.onerror=function(){
+    ttsActive=false;
+    btn.classList.remove('speaking');
+    btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg> Listen';
+  };
+  window.speechSynthesis.speak(utt);
+}
+function stopSpeech(){
+  if(ttsActive){window.speechSynthesis.cancel();ttsActive=false;}
+  var btn=document.getElementById('speakBtn');
+  if(btn){btn.classList.remove('speaking');btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg> Listen';}
+}
+// Stop speech when card changes
+var _origShowCard=showCard;
+// ──────────────────────────────────────────────────────────
 init();
 </script>
 </body>
